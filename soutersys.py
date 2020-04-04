@@ -1,3 +1,6 @@
+#----------MAIN SOUTER---------
+# VERSION 0403
+
 import sys
 from PyQt5 import QtGui, QtWidgets
 from screengui import Ui_MainWindow
@@ -10,7 +13,7 @@ class Souter(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
 
         #Funcion click boton iniciar grabacion
-        self.ui.btn_grabar.clicked.connect(self.crearnota)
+        self.ui.btn_grabar.clicked.connect(self.ActiveSouter)
 
         self.ui.btn_stop.clicked.connect(self.ResetSouter)
 
@@ -21,7 +24,7 @@ class Souter(QtWidgets.QMainWindow):
         self.ui.btn_grabar.setIcon(QtGui.QIcon("imagenes/grabar.tif"))
         self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/offline.png"))                
     #funcion prueba
-    def crearnota(self):
+    def ActiveSouter(self):
         
         self.ui.cntbtt+=1 
                

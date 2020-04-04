@@ -186,14 +186,15 @@ def EncontrarNotaEnSenal(signal,number_samples,samplerate):
 	return notasExtraidas,magnitudes2
 
 
-arrgloNotacion=[]
+arrgloNotacion=np.asarray([])
 MagEnElTiempo=[]
 arrNotasTocadas=["Silencio"]
 sigRMS0=0
 df=0
 capNota=False
-magnitudes=[]
-
+magnitudes=np.asarray([])
+maDetallada=np.asarray([])
+arrPuntoRojo=np.asarray([]) #Quitar sino funciona
 #while len(MagEnElTiempo)<200:
 while True:
 	try:
@@ -204,6 +205,8 @@ while True:
 		signal = np.fromstring(audiobuffer, dtype=np.int16)
 		number_samples = len(signal)
 		sigRMS=encontrarRMS(signal)
+
+		maDetallada=np.append(maDetallada,signal)
 
 
 		df=sigRMS-sigRMS0
@@ -244,10 +247,22 @@ while True:
 		if sigRMS>500:
 			sigRMS0=sigRMS
 			#df0=df
+		'''else:
+			if abs(sigRMS0)<1:
+				if sigRMS0==0:
+					sigRMS0=sigRMS0/abs(sigRMS0)'''
+
+
+		if df>0:
+			if sigRMS0==0:
+				sigRMS0=1
+			puntoRojo=df/abs(sigRMS0)
 		else:
-			sigRMS0=0
+			if sigRMS==0:
+				sigRMS=1
+			puntoRojo=df/abs(sigRMS)
 
-
+		arrPuntoRojo=np.append(arrPuntoRojo,puntoRojo)
 
 
 		#MagEnElTiempo.append(signalRMSfourier)
@@ -268,33 +283,53 @@ while True:
 	except KeyboardInterrupt:
 		print("*** Ctrl+C pressed, exiting")
 		break
-
-t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+print("MagEnElTiempo "+str(len(MagEnElTiempo)))
+print("arrPuntoRojo "+ str(len(arrPuntoRojo)))
 
 plt.figure(1)       # define la grafica
 plt.suptitle('Envolvente en el tiempo')
-plt.subplot(111)    # grafica de 3x2, subgrafica 4
+
+
+t=np.arange(len(maDetallada))/samplerate
+#plt.subplot(211)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(t,maDetallada,"k")
+plt.grid()
+
+t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+
+#plt.subplot(211)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
 plt.plot(t,MagEnElTiempo)
 plt.grid()
 #plt.show()
 
-plt.subplot(111)    # grafica de 2x1, subgrafica 2
+#plt.subplot(211)    # grafica de 2x1, subgrafica 2
 plt.ylabel('derivada(magnitud)')
 plt.xlabel(' tiempo')
 t=np.delete(t,-1)
 derivada=diff(MagEnElTiempo)
-plt.plot(t,derivada,"xg")
+plt.plot(t,derivada,"og")
 plt.grid()
 
 MagEnElTiempo=np.delete(MagEnElTiempo,-1)
-plt.subplot(111)    # grafica de 2x1, subgrafica 2
+#plt.subplot(211)    # grafica de 2x1, subgrafica 2
 plt.ylabel('derivada/magnitud')
 plt.xlabel(' tiempo')
-
 plt.plot(t,(derivada/MagEnElTiempo)*100,"or")
 plt.grid()
+
+
+t=np.arange(len(arrPuntoRojo))*number_samples/samplerate
+
+plt.ylabel('derivada/magnitud condicional')
+plt.xlabel(' tiempo')
+plt.plot(t,arrPuntoRojo*100,"ob")
+plt.grid()
+
+
 plt.show()
 print("*** done recording")
 

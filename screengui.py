@@ -1,5 +1,6 @@
-#-------SOUTER 0322-------
+#-------SOUTER 0403-------
 #---CODIGO BASE DE GUI SOUTER (Hijo)---
+#funciona al pelo
 from PyQt5 import QtCore, QtGui, QtWidgets
 
 class Ui_MainWindow(object):
