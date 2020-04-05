@@ -1,4 +1,4 @@
-#Codigo funcional TESIS
+ #Codigo funcional TESIS
 #Version 3.0    --graba y entrega nota en vivo
 #Ahora muestra la nota una vez e indica el tiempo que se sostiene la nota, FUNCIONANDO
 
@@ -67,25 +67,25 @@ while True:
 
         signal = np.fromstring(audiobuffer, dtype=np.float32)
         
-        pitch = pitch_o(signal)[0]
+        tono = pitch_o(signal)[0]
         
-        if pitch > 15 and pitch < 2100:
+        if tono > 15 and tono < 2100:
             #Condicion en sonido
 
             if sg==0:
                 #De silencio a sonido
                 sg=1
-                nota=pitching(pitch)
+                nota=pitching(tono)
                 cnt+=1
 
-            elif nota==pitching(pitch):
+            elif nota==pitching(tono):
                 #Se mantiene la misma nota
                 cnt+=1
 
             else:
                 #Cambia de nota sin pasar por silencio 
-                notacion(pitching(pitch),cnt)
-                nota=pitching(pitch)
+                notacion(pitching(tono),cnt)
+                nota=pitching(tono)
                 cnt=0
                   
             #print(pitching(pitch))
