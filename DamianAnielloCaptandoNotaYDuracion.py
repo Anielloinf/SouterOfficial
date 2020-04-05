@@ -78,6 +78,7 @@ def pitching(freq):
 # En funcion de las muestras, entrega el tiempo de duracion de las notas 
 def encontrarRMS(signal):
 	signalAux=signal/np.sqrt(len(signal)) 
+	
 	'''Se debe dividir por la raíz cuadrada del número de muestras para 
 	que los valores de signal no se desborden mas adelante. **0.5'''
 
