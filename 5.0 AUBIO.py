@@ -67,7 +67,10 @@ while True:
 
         signal = np.fromstring(audiobuffer, dtype=np.float32)
         
-        tono = pitch_o(signal)[0]
+        #tono=aubio.fvec(signal)
+        tono = pitch_o(signal)[0]       
+        #print(tono)
+
         
         if tono > 15 and tono < 2100:
             #Condicion en sonido
@@ -84,7 +87,7 @@ while True:
 
             else:
                 #Cambia de nota sin pasar por silencio 
-                notacion(pitching(tono),cnt)
+                notacion(nota,cnt)
                 nota=pitching(tono)
                 cnt=0
                   

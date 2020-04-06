@@ -116,16 +116,12 @@ class Souter(QtWidgets.QMainWindow):
 
 #ESTO ES LO QUE OCURRE EN EL HILO
     def progress_fn(self, cnt,nota):
-       
-        print(cnt+1)
-        print(nota)
-
-
+        pass
     def execute_this_fn(self, progress_callback):
         while (self.ui.cntbtt==1):
 
             self.audiobuffer = self.stream.read(self.buffer_size)
-            self.signal = np.fromstring(self.audiobuffer, dtype=np.float32)
+            self.signal = np.frombuffer(self.audiobuffer, dtype=np.float32)
             self.pitch = self.pitch_o(self.signal)[0]       
             if self.pitch > 15 and self.pitch < 2100:
             #Condicion en sonido
@@ -142,10 +138,13 @@ class Souter(QtWidgets.QMainWindow):
 
                 else:
                 #Cambia de nota sin pasar por silencio 
-                    #self.notacion(pitching(self.pitch),self.cnt)
-                    progress_callback.emit(self.cnt, self.nota)
-                    self.nota=self.pitching(self.pitch)
-                    self.cnt=0
+                    #if self.cnt>5:
+                        self.ui.Crearnota(self.cnt/43,self.nota)
+                        print("Nota: %3s, Tiempo: %4.2f,segundos" % (self.nota,self.cnt/43))
+                    #self.notacion(self.nota,self.cnt)
+                    #progress_callback.emit(self.cnt, self.nota)
+                        self.nota=self.pitching(self.pitch)
+                        self.cnt=0
                   
             #print(pitching(pitch))
             else:
@@ -154,15 +153,20 @@ class Souter(QtWidgets.QMainWindow):
                 if self.sg==1:
                     if self.nota:
                 #De sonido a silencio
-
+                        #if self.cnt>5:    
+                            self.ui.Crearnota(self.cnt/43,self.nota)
+                            print("Nota: %3s, Tiempo: %4.2f,segundos" % (self.nota,self.cnt/43))
                         #self.notacion(self.nota,self.cnt)
-                        progress_callback.emit(self.cnt, self.nota)
-                        self.nota=0
-                        self.sg=0
-                        self.cnt=0
-                else:
-                    self.nota="kk"
-                    progress_callback.emit(self.cnt, self.nota)
+                        #progress_callback.emit(self.cnt, self.nota)
+                            
+                            self.nota=0
+                            
+                            self.sg=0
+                            
+                            self.cnt=0
+           #     else:
+            #        self.nota="kk"
+             #       progress_callback.emit(self.cnt, self.nota)
  #AQUI TERMINA LOS CALCULOS               
  
     def print_output(self, s):
@@ -170,6 +174,10 @@ class Souter(QtWidgets.QMainWindow):
     def thread_complete(self):
         print("THREAD COMPLETE!")
 
+#    def notacion(nota,time):
+ #       if time>=5:
+
+  #          return print("Nota: %3s, Tiempo: %4.2f,segundos" % (nota,time/43))
              
     def pitching(self, freq):
         self.A4 = 440
