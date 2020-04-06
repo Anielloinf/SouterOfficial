@@ -2,7 +2,6 @@
 # RAMA TESISCONAUBIO
 #---PRUEBA PRIMERA VERSION LISTA DE LA TESIS CON AUBIO
 # VERSION 0404
-
 import pyaudio
 import sys
 from PyQt5 import QtGui, QtWidgets
@@ -82,11 +81,7 @@ class Souter(QtWidgets.QMainWindow):
                         input=True,
                         frames_per_buffer=self.buffer_size)
 
-        #Configura notas
-        self.A4 = 440
-        self.C0 = self.A4*pow(2, -4.75)
-        self.name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
-    
+        #Configura notas    
  #       def notacion(self, nota,time):
   #          if self.time>=5:
    #             return print("Nota: %3s, Tiempo: %4.2f,segundos" % (nota,time/43))
@@ -121,26 +116,24 @@ class Souter(QtWidgets.QMainWindow):
 
 #ESTO ES LO QUE OCURRE EN EL HILO
     def progress_fn(self, cnt,nota):
-        print(cnt)
+       
+        print(cnt+1)
         print(nota)
-        
+
 
     def execute_this_fn(self, progress_callback):
         while (self.ui.cntbtt==1):
 
             self.audiobuffer = self.stream.read(self.buffer_size)
-
             self.signal = np.fromstring(self.audiobuffer, dtype=np.float32)
-        
-            self.pitch = self.pitch_o(self.signal)[0]
-        
+            self.pitch = self.pitch_o(self.signal)[0]       
             if self.pitch > 15 and self.pitch < 2100:
             #Condicion en sonido
 
                 if self.sg==0:
                 #De silencio a sonido
                     self.sg=1
-                    self.nota=pitching(self.pitch)
+                    self.nota=self.pitching(self.pitch)
                     self.cnt+=1
 
                 elif self.nota==self.pitching(self.pitch):
@@ -150,7 +143,8 @@ class Souter(QtWidgets.QMainWindow):
                 else:
                 #Cambia de nota sin pasar por silencio 
                     #self.notacion(pitching(self.pitch),self.cnt)
-                    self.nota=pitching(self.pitch)
+                    progress_callback.emit(self.cnt, self.nota)
+                    self.nota=self.pitching(self.pitch)
                     self.cnt=0
                   
             #print(pitching(pitch))
@@ -162,25 +156,29 @@ class Souter(QtWidgets.QMainWindow):
                 #De sonido a silencio
 
                         #self.notacion(self.nota,self.cnt)
+                        progress_callback.emit(self.cnt, self.nota)
                         self.nota=0
                         self.sg=0
                         self.cnt=0
                 else:
                     self.nota="kk"
-            progress_callback.emit(self.cnt, self.nota)
- #AQUI TERMINA LOS CALCULOS           
-        
+                    progress_callback.emit(self.cnt, self.nota)
+ #AQUI TERMINA LOS CALCULOS               
  
     def print_output(self, s):
         print(s)
     def thread_complete(self):
         print("THREAD COMPLETE!")
+
              
     def pitching(self, freq):
-            self.h = round(12*log2(freq/self.C0))
-            self.octave = self.h // 12
-            self.n = self.h % 12
-            return self.name[self.n] + str(self.octave)
+        self.A4 = 440
+        self.C0 = self.A4*pow(2, -4.75)
+        self.name = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"]
+        self.h = round(12*log2(freq/self.C0))
+        self.octave = self.h // 12
+        self.n = self.h % 12 
+        return self.name[self.n] + str(self.octave)
        
 
  #---/* AQUI TERMINA EL HILO CREADO 
@@ -224,7 +222,9 @@ if __name__ == "__main__":
     ventana=Souter()
     ventana.show()
     sys.exit(app.exec_())
-
+    stream.stop_stream()
+    stream.close()
+    p.terminate()
 
 
 
