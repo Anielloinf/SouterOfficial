@@ -15,22 +15,18 @@ from math import log2, pow
 
 class Worker(QRunnable):
 
-    def __init__(self, fn, *args, **kwargs):
+    def __init__(self, fn):
+
         super(Worker, self).__init__()
-
-        # Store constructor arguments (re-used for processing)
         self.fn = fn
-        self.args = args
-        self.kwargs = kwargs
 
-    #@pyqtSlot()
     def run(self):
-        # Retrieve args/kwargs here; and fire processing using them
-        self.fn(*self.args, **self.kwargs)
 
+        self.fn()
 
 class Souter(QtWidgets.QMainWindow):
     def __init__(self):
+
         super().__init__()
 
         self.ui=Ui_MainWindow()
@@ -50,7 +46,6 @@ class Souter(QtWidgets.QMainWindow):
                         rate=self.samplerate,
                         input=True,
                         frames_per_buffer=self.buffer_size)
-
 
         # setup pitch
         self.tolerance = 0.8
