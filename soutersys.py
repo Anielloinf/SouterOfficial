@@ -1,28 +1,16 @@
 #----------MAIN SOUTER---------
 # RAMA TESISCONAUBIO
 #---PRUEBA PRIMERA VERSION LISTA DE LA TESIS CON AUBIO
-# VERSION 0404
+# VERSION 0407
+#----------codigo pulido, quitado las lineas sobrantes
 import pyaudio
 import sys
 from PyQt5 import QtGui, QtWidgets
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from screengui import Ui_MainWindow
 import numpy as np
 import aubio
-import traceback, sys
 from math import log2, pow
-
-#---espacio de pruebas para multihilos
-
-
-class WorkerSignals(QObject):
-    finished = pyqtSignal()
-    error = pyqtSignal(tuple)
-    result = pyqtSignal(object)
-    progress = pyqtSignal(int,str)
-
 
 
 class Worker(QRunnable):
@@ -34,29 +22,11 @@ class Worker(QRunnable):
         self.fn = fn
         self.args = args
         self.kwargs = kwargs
-        self.signals = WorkerSignals()    
 
-        # Add the callback to our kwargs
-        self.kwargs['progress_callback'] = self.signals.progress        
-
-    @pyqtSlot()
+    #@pyqtSlot()
     def run(self):
         # Retrieve args/kwargs here; and fire processing using them
-        try:
-            result = self.fn(*self.args, **self.kwargs)
-        except:
-            traceback.print_exc()
-            exctype, value = sys.exc_info()[:2]
-            self.signals.error.emit((exctype, value, traceback.format_exc()))
-        else:
-            self.signals.result.emit(result)  # Return the result of the processing
-        finally:
-            self.signals.finished.emit()  # Done
-
-
-#--fin de espacio de pruebas
-
-
+        self.fn(*self.args, **self.kwargs)
 
 
 class Souter(QtWidgets.QMainWindow):
@@ -81,13 +51,6 @@ class Souter(QtWidgets.QMainWindow):
                         input=True,
                         frames_per_buffer=self.buffer_size)
 
-        #Configura notas    
- #       def notacion(self, nota,time):
-  #          if self.time>=5:
-   #             return print("Nota: %3s, Tiempo: %4.2f,segundos" % (nota,time/43))
-
-        #self.outputsink = None
-
 
         # setup pitch
         self.tolerance = 0.8
@@ -104,81 +67,54 @@ class Souter(QtWidgets.QMainWindow):
         self.cnt=0
         self.nota=''
 
-        #Funcion click boton iniciar grabacion
+        #Llamado a las funciones al iniciar o detener la grabacion
         self.ui.btn_grabar.clicked.connect(self.ActiveSouter)
-        
         self.ui.btn_stop.clicked.connect(self.ResetSouter)
 
-        #Aqui se deberia crear el pool 
-#SE CREA EL POOL DE HILOS ACÁ Y SE DEFINE EL TOPE
+        #SE CREA EL POOL DE HILOS ACÁ 
         self.threadpool = QThreadPool()
-        print("Multithreading with maximum %d threads" % self.threadpool.maxThreadCount())
 
-#ESTO ES LO QUE OCURRE EN EL HILO
-    def progress_fn(self, cnt,nota):
-        pass
-    def execute_this_fn(self, progress_callback):
+    def execute_this_fn(self):
         while (self.ui.cntbtt==1):
 
             self.audiobuffer = self.stream.read(self.buffer_size)
             self.signal = np.frombuffer(self.audiobuffer, dtype=np.float32)
             self.pitch = self.pitch_o(self.signal)[0]       
             if self.pitch > 15 and self.pitch < 2100:
-            #Condicion en sonido
 
+            #Condicion en sonido
                 if self.sg==0:
                 #De silencio a sonido
+
                     self.sg=1
                     self.nota=self.pitching(self.pitch)
                     self.cnt+=1
-
                 elif self.nota==self.pitching(self.pitch):
                 #Se mantiene la misma nota
                     self.cnt+=1
 
                 else:
                 #Cambia de nota sin pasar por silencio 
-                    #if self.cnt>5:
+
                         self.ui.Crearnota(self.cnt/43,self.nota)
                         print("Nota: %3s, Tiempo: %4.2f,segundos" % (self.nota,self.cnt/43))
-                    #self.notacion(self.nota,self.cnt)
-                    #progress_callback.emit(self.cnt, self.nota)
                         self.nota=self.pitching(self.pitch)
                         self.cnt=0
                   
-            #print(pitching(pitch))
+
             else:
+
             #Condicion en silencio
 
                 if self.sg==1:
                     if self.nota:
-                #De sonido a silencio
-                        #if self.cnt>5:    
+                #De sonido a silencio    
                             self.ui.Crearnota(self.cnt/43,self.nota)
                             print("Nota: %3s, Tiempo: %4.2f,segundos" % (self.nota,self.cnt/43))
-                        #self.notacion(self.nota,self.cnt)
-                        #progress_callback.emit(self.cnt, self.nota)
-                            
                             self.nota=0
-                            
                             self.sg=0
-                            
                             self.cnt=0
-           #     else:
-            #        self.nota="kk"
-             #       progress_callback.emit(self.cnt, self.nota)
- #AQUI TERMINA LOS CALCULOS               
- 
-    def print_output(self, s):
-        print(s)
-    def thread_complete(self):
-        print("THREAD COMPLETE!")
-
-#    def notacion(nota,time):
- #       if time>=5:
-
-  #          return print("Nota: %3s, Tiempo: %4.2f,segundos" % (nota,time/43))
-             
+        
     def pitching(self, freq):
         self.A4 = 440
         self.C0 = self.A4*pow(2, -4.75)
@@ -188,35 +124,20 @@ class Souter(QtWidgets.QMainWindow):
         self.n = self.h % 12 
         return self.name[self.n] + str(self.octave)
        
+    def ActiveSouter(self): 
 
- #---/* AQUI TERMINA EL HILO CREADO 
-
-
-
-    #funcion prueba
-
-    def ActiveSouter(self):     
-        self.ui.cntbtt+=1 
-             
+        self.ui.cntbtt+=1  
         if self.ui.cntbtt==1:
                 self.ui.btn_grabar.setIcon(QtGui.QIcon("imagenes/pause.tif"))
                 self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/online.png"))
-         # Pass the function to execute
-                worker = Worker(self.execute_this_fn) # Any other args, kwargs are passed to the run function
-                worker.signals.result.connect(self.print_output)
-                worker.signals.finished.connect(self.thread_complete)
-                worker.signals.progress.connect(self.progress_fn)
-        
-        # Execute
+
+                worker = Worker(self.execute_this_fn) 
                 self.threadpool.start(worker) 
-                        
-                
+                                 
         elif self.ui.cntbtt==2:
                 self.ui.cntbtt=0
                 self.ui.btn_grabar.setIcon(QtGui.QIcon("imagenes/grabar.tif"))
                 self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/offline.png"))
-
-       
 
     def ResetSouter(self):
         self.ui.LimpiaLabel()
