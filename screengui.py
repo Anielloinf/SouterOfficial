@@ -878,6 +878,7 @@ class Ui_MainWindow(object):
         elif duracion >= 2.5:
             tiempo=48
             
+            
         #---------NOTAS NATURALES---------------
         if tono=='A4' or tono=='D4' or tono=='E4' or tono=='F4' or tono=='G4':
             if tiempo==2:
