@@ -15,9 +15,24 @@ import pyaudio
 import soundfile
 import numpy as np
 from math import log2, pow
-from scipy.stats import mode
 
 import matplotlib.pyplot as plt
+import DamianAniello as DaAn
+
+# Inicializa Pyaudio
+p = pyaudio.PyAudio()
+
+# Configura parametros del Stream 
+buffer_size = 1024
+pyaudio_format = pyaudio.paInt16
+n_channels = 1
+samplerate = 44100
+stream = p.open(format=pyaudio_format,
+                channels=n_channels,
+                rate=samplerate,
+                input=True,
+                frames_per_buffer=buffer_size)
+
 
 Fotas=['Nada','C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1','A1', 'A#1', 'B1', 
 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2','A2', 'A#2', 'B2', 
@@ -171,40 +186,170 @@ def EncontrarNotaEnSenal(signal,number_samples,samplerate):
 	#frequencies tiene la frecuencia en el símbolo del segmento de nota que le corresponde
 	return notasExtraidas,magnitudes2
 
-def Moda(Arreglo):
-	return mode(Arreglo)[0][0]
+
+arrgloNotacion=np.asarray([])
+MagEnElTiempo=[]
+arrNotasTocadas=["Silencio"]
+sigRMS0=0
+df=0
+capNota=False
+magnitudes=np.asarray([])
+maDetallada=np.asarray([])
+arrPuntoRojo=np.asarray([]) #Quitar sino funciona
+#while len(MagEnElTiempo)<200:
+while True:
+	try:
+
+		audiobuffer = stream.read(buffer_size)
+
+		#audio_samples, sample_rate  = soundfile.read(audiobuffer, dtype='int16')
+		signal = np.fromstring(audiobuffer, dtype=np.int16)
+		number_samples = len(signal)
+		sigRMS=encontrarRMS(signal)
+
+		maDetallada=np.append(maDetallada,signal)
 
 
-def CompletarRecta(largo,	vInicial,	vFinal):
-	
-	arrSal=np.arange(largo)*(vFinal-vInicial)/largo
-	arrSal=arrSal+vInicial
-	return(arrSal)
-
-def AplanarEnvolvente(envolventeObtenida=np.asarray([0]),	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	funcionTransferencia=envolventeDeseada/envolventeObtenida
-	vInicial=valorInicial
-	ftsal=np.asarray([])
-	for dato in funcionTransferencia:
-		ftsal=np.append(ftsal,CompletarRecta(largoDelBus,vInicial,dato))
-		vInicial=dato
-	return ftsal
+		df=sigRMS-sigRMS0
+		if sigRMS<500 and capNota:
+			#MostraNotas ANIELLO!!
+			print(arrNotasTocadas)
+			tNota=len(arrNotasTocadas)*buffer_size/samplerate
+			print("\n"+"###########################  Largo de la nota "+ str(tNota)+" s  ###########################"+"\n")
+			print("#####################       Comienza el silencio          ####################")
+			capNota=False
+			arrNotasTocadas=["Silencio"]
+			senalCorregida=np.append(senalACorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size))
 
 
-def CorregirSenal(senal=np.asarray([]),envolventeObtenida=np.asarray([]),	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	return senal*AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus,	valorInicial)
+		if df>500:
+			#MostraNotas ANIELLO!!
+			print(arrNotasTocadas)
+			tNota=len(arrNotasTocadas)*buffer_size/samplerate
+			print("\n"+"###########################  Largo de la nota "+ str(tNota)+" s  ###########################"+"\n")
+			print("-----------------------     Cambio sin silencio          ---------------------")
+			capNota=True
+			arrNotasTocadas=[]
 
 
-
-
-
-
-
-
+			senalCorregida=np.append(senalACorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size,valorInicial=0))
+			senalACorregir=np.append(senalACorregir,signal)
 
 
 
-	
 
 
-		
+
+		if capNota:
+
+			notasExtraidas,magnitudes=EncontrarNotaEnSenal(signal,number_samples,samplerate)
+		#signalRMSfourier=fourierRMS(normalization_data)
+			notaExtraida=notasExtraidas[0]
+
+
+			senalACorregir=np.append(senalACorregir,signal)
+			envSenalACorregir=np.append(envSenalACorregir,sigRMS)
+
+
+			
+
+		else:
+			notaExtraida="Silencio"
+			senalCorregida=np.append(senalCorregida,signal)
+			
+
+		arrNotasTocadas.append(notaExtraida)
+
+
+		if sigRMS>500:
+			sigRMS0=sigRMS
+			#df0=df
+		'''else:
+			if abs(sigRMS0)<1:
+				if sigRMS0==0:
+					sigRMS0=sigRMS0/abs(sigRMS0)'''
+
+
+		if df>0:
+			if sigRMS0==0:
+				sigRMS0=1
+			puntoRojo=df/abs(sigRMS0)
+		else:
+			if sigRMS==0:
+				sigRMS=1
+			puntoRojo=df/abs(sigRMS)
+
+		arrPuntoRojo=np.append(arrPuntoRojo,puntoRojo)
+
+
+		#MagEnElTiempo.append(signalRMSfourier)
+		MagEnElTiempo.append(sigRMS)
+		'''if len(magnitudes)>0:
+			arrgloNotacion.append(notasExtraidas[0])
+			print(notasExtraidas[0])
+			#print(signalRMSfourier)
+			print(sigRMS)
+
+		else:
+			tNota=len(arrgloNotacion)*buffer_size/samplerate
+			if tNota!=0:
+				print("\n"+"###########################  Largo de la nota "+ str(tNota)+" s  ###########################"+"\n")
+				arrgloNotacion=[]'''
+
+
+	except KeyboardInterrupt:
+		print("*** Ctrl+C pressed, exiting")
+		break
+print("MagEnElTiempo "+str(len(MagEnElTiempo)))
+print("arrPuntoRojo "+ str(len(arrPuntoRojo)))
+
+plt.figure(1)       # define la grafica
+plt.suptitle('Envolvente en el tiempo')
+
+
+t=np.arange(len(maDetallada))/samplerate
+#plt.subplot(211)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(t,maDetallada,"k")
+plt.grid()
+
+t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+
+#plt.subplot(211)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(t,MagEnElTiempo)
+plt.grid()
+#plt.show()
+
+#plt.subplot(211)    # grafica de 2x1, subgrafica 2
+plt.ylabel('derivada(magnitud)')
+plt.xlabel(' tiempo')
+t=np.delete(t,-1)
+derivada=diff(MagEnElTiempo)
+plt.plot(t,derivada,"og")
+plt.grid()
+
+MagEnElTiempo=np.delete(MagEnElTiempo,-1)
+#plt.subplot(211)    # grafica de 2x1, subgrafica 2
+plt.ylabel('derivada/magnitud')
+plt.xlabel(' tiempo')
+plt.plot(t,(derivada/MagEnElTiempo)*100,"or")
+plt.grid()
+
+
+t=np.arange(len(arrPuntoRojo))*number_samples/samplerate
+
+plt.ylabel('derivada/magnitud condicional')
+plt.xlabel(' tiempo')
+plt.plot(t,arrPuntoRojo*100,"ob")
+plt.grid()
+
+
+plt.show()
+print("*** done recording")
+
+stream.stop_stream()
+stream.close()
+p.terminate()
