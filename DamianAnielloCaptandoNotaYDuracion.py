@@ -197,7 +197,10 @@ magnitudes=np.asarray([])
 maDetallada=np.asarray([])
 arrPuntoRojo=np.asarray([]) #Quitar sino funciona
 #while len(MagEnElTiempo)<200:
-while True:
+senalCorregida=np.asarray([])
+senalACorregir=np.asarray([])
+envSenalACorregir=np.asarray([])
+while len(MagEnElTiempo)<105:
 	try:
 
 		audiobuffer = stream.read(buffer_size)
@@ -219,7 +222,7 @@ while True:
 			print("#####################       Comienza el silencio          ####################")
 			capNota=False
 			arrNotasTocadas=["Silencio"]
-			senalCorregida=np.append(senalACorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size))
+			senalCorregida=np.append(senalCorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size))
 
 
 		if df>500:
@@ -232,8 +235,10 @@ while True:
 			arrNotasTocadas=[]
 
 
-			senalCorregida=np.append(senalACorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size,valorInicial=0))
-			senalACorregir=np.append(senalACorregir,signal)
+			senalCorregida=np.append(senalCorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,3000,buffer_size,valorInicial=0))
+			senalACorregir=np.asarray([])
+			#senalACorregir=np.append(senalACorregir,signal)
+			envSenalACorregir=np.asarray([])
 
 
 
@@ -270,7 +275,7 @@ while True:
 					sigRMS0=sigRMS0/abs(sigRMS0)'''
 
 
-		if df>0:
+		'''if df>0:
 			if sigRMS0==0:
 				sigRMS0=1
 			puntoRojo=df/abs(sigRMS0)
@@ -279,7 +284,7 @@ while True:
 				sigRMS=1
 			puntoRojo=df/abs(sigRMS)
 
-		arrPuntoRojo=np.append(arrPuntoRojo,puntoRojo)
+		arrPuntoRojo=np.append(arrPuntoRojo,puntoRojo)'''
 
 
 		#MagEnElTiempo.append(signalRMSfourier)
@@ -308,43 +313,47 @@ plt.suptitle('Envolvente en el tiempo')
 
 
 t=np.arange(len(maDetallada))/samplerate
-#plt.subplot(211)    # grafica de 3x2, subgrafica 4
+plt.subplot(211)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
 plt.plot(t,maDetallada,"k")
 plt.grid()
 
-t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
 
-#plt.subplot(211)    # grafica de 3x2, subgrafica 4
+#t=np.arange(len(senalCorregida))/samplerate
+plt.subplot(212)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(t,senalCorregida,"g")
+plt.grid()
+
+t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+plt.subplot(212)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(t,(MagEnElTiempo))
+plt.grid()
+
+'''
+
+plt.subplot(211)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
 plt.plot(t,MagEnElTiempo)
-plt.grid()
+plt.grid()'''
 #plt.show()
 
-#plt.subplot(211)    # grafica de 2x1, subgrafica 2
+
+
+
+
+'''plt.subplot(211)    # grafica de 2x1, subgrafica 2
 plt.ylabel('derivada(magnitud)')
 plt.xlabel(' tiempo')
 t=np.delete(t,-1)
 derivada=diff(MagEnElTiempo)
 plt.plot(t,derivada,"og")
-plt.grid()
-
-MagEnElTiempo=np.delete(MagEnElTiempo,-1)
-#plt.subplot(211)    # grafica de 2x1, subgrafica 2
-plt.ylabel('derivada/magnitud')
-plt.xlabel(' tiempo')
-plt.plot(t,(derivada/MagEnElTiempo)*100,"or")
-plt.grid()
-
-
-t=np.arange(len(arrPuntoRojo))*number_samples/samplerate
-
-plt.ylabel('derivada/magnitud condicional')
-plt.xlabel(' tiempo')
-plt.plot(t,arrPuntoRojo*100,"ob")
-plt.grid()
+plt.grid()'''
 
 
 plt.show()

@@ -181,7 +181,7 @@ def CompletarRecta(largo,	vInicial,	vFinal):
 	arrSal=arrSal+vInicial
 	return(arrSal)
 
-def AplanarEnvolvente(envolventeObtenida=np.asarray([0]),	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
+def AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
 	funcionTransferencia=envolventeDeseada/envolventeObtenida
 	vInicial=valorInicial
 	ftsal=np.asarray([])
@@ -191,7 +191,7 @@ def AplanarEnvolvente(envolventeObtenida=np.asarray([0]),	envolventeDeseada,	lar
 	return ftsal
 
 
-def CorregirSenal(senal=np.asarray([]),envolventeObtenida=np.asarray([]),	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
+def CorregirSenal(senal,envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
 	return senal*AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus,	valorInicial)
 
 
