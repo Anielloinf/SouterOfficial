@@ -200,6 +200,8 @@ arrPuntoRojo=np.asarray([]) #Quitar sino funciona
 senalCorregida=np.asarray([])
 senalACorregir=np.asarray([])
 envSenalACorregir=np.asarray([])
+
+valorInicial=0
 while len(MagEnElTiempo)<105:
 	try:
 
@@ -214,7 +216,7 @@ while len(MagEnElTiempo)<105:
 
 
 		df=sigRMS-sigRMS0
-		if sigRMS<500 and capNota:
+		if sigRMS<5000 and capNota:
 			#MostraNotas ANIELLO!!
 			print(arrNotasTocadas)
 			tNota=len(arrNotasTocadas)*buffer_size/samplerate
@@ -222,10 +224,16 @@ while len(MagEnElTiempo)<105:
 			print("#####################       Comienza el silencio          ####################")
 			capNota=False
 			arrNotasTocadas=["Silencio"]
-			senalCorregida=np.append(senalCorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,np.median(envSenalACorregir),buffer_size))
+			
 
+			notaCorregida,valorInicial=DaAn.CorregirSenal(senalACorregir,envSenalACorregir,5000,buffer_size,valorInicial=valorInicial)
+			senalCorregida=np.append(senalCorregida,notaCorregida)
+			senalACorregir=np.asarray([])
+			envSenalACorregir=np.asarray([])
 
-		if df>500:
+			
+
+		if df>5000:
 			#MostraNotas ANIELLO!!
 			print(arrNotasTocadas)
 			tNota=len(arrNotasTocadas)*buffer_size/samplerate
@@ -233,9 +241,9 @@ while len(MagEnElTiempo)<105:
 			print("-----------------------     Cambio sin silencio          ---------------------")
 			capNota=True
 			arrNotasTocadas=[]
-
-
-			senalCorregida=np.append(senalCorregida,DaAn.CorregirSenal(senalACorregir,envSenalACorregir,3000,buffer_size,valorInicial=0))
+			#encontrarRMS(senalACorregir)
+			notaCorregida,valorInicial=DaAn.CorregirSenal(senalACorregir,envSenalACorregir,5000,buffer_size,valorInicial=valorInicial)
+			senalCorregida=np.append(senalCorregida,notaCorregida)
 			senalACorregir=np.asarray([])
 			#senalACorregir=np.append(senalACorregir,signal)
 			envSenalACorregir=np.asarray([])
@@ -261,45 +269,16 @@ while len(MagEnElTiempo)<105:
 		else:
 			notaExtraida="Silencio"
 			senalCorregida=np.append(senalCorregida,signal)
-			
+			valorInicial=sigRMS
 
 		arrNotasTocadas.append(notaExtraida)
 
 
-		if sigRMS>500:
+		if sigRMS>5000:
 			sigRMS0=sigRMS
-			#df0=df
-		'''else:
-			if abs(sigRMS0)<1:
-				if sigRMS0==0:
-					sigRMS0=sigRMS0/abs(sigRMS0)'''
-
-
-		'''if df>0:
-			if sigRMS0==0:
-				sigRMS0=1
-			puntoRojo=df/abs(sigRMS0)
-		else:
-			if sigRMS==0:
-				sigRMS=1
-			puntoRojo=df/abs(sigRMS)
-
-		arrPuntoRojo=np.append(arrPuntoRojo,puntoRojo)'''
-
-
-		#MagEnElTiempo.append(signalRMSfourier)
+			
 		MagEnElTiempo.append(sigRMS)
-		'''if len(magnitudes)>0:
-			arrgloNotacion.append(notasExtraidas[0])
-			print(notasExtraidas[0])
-			#print(signalRMSfourier)
-			print(sigRMS)
-
-		else:
-			tNota=len(arrgloNotacion)*buffer_size/samplerate
-			if tNota!=0:
-				print("\n"+"###########################  Largo de la nota "+ str(tNota)+" s  ###########################"+"\n")
-				arrgloNotacion=[]'''
+		
 
 
 	except KeyboardInterrupt:
@@ -312,48 +291,35 @@ plt.figure(1)       # define la grafica
 plt.suptitle('Envolvente en el tiempo')
 
 
-t=np.arange(len(maDetallada))/samplerate
+
+tdet=np.arange(len(maDetallada))/samplerate
 plt.subplot(211)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
-plt.plot(t,maDetallada,"k")
+plt.plot(tdet,maDetallada,"ok")
 plt.grid()
 
+tam=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+plt.subplot(211)    # grafica de 3x2, subgrafica 4
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+plt.plot(tam,MagEnElTiempo,"b")
+plt.grid()
 
 #t=np.arange(len(senalCorregida))/samplerate
 plt.subplot(212)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
-plt.plot(t,senalCorregida,"g")
+plt.plot(tdet,senalCorregida,"og")
 plt.grid()
 
-t=np.arange(len(MagEnElTiempo))*number_samples/samplerate
+
 plt.subplot(212)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
-plt.plot(t,(MagEnElTiempo))
+plt.plot(tam,(MagEnElTiempo))
 plt.grid()
 
-'''
-
-plt.subplot(211)    # grafica de 3x2, subgrafica 4
-plt.ylabel('MagEnElTiempo')
-plt.xlabel('tiempo')
-plt.plot(t,MagEnElTiempo)
-plt.grid()'''
-#plt.show()
-
-
-
-
-
-'''plt.subplot(211)    # grafica de 2x1, subgrafica 2
-plt.ylabel('derivada(magnitud)')
-plt.xlabel(' tiempo')
-t=np.delete(t,-1)
-derivada=diff(MagEnElTiempo)
-plt.plot(t,derivada,"og")
-plt.grid()'''
 
 
 plt.show()

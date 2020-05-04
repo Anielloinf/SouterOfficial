@@ -188,11 +188,14 @@ def AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valo
 	for dato in funcionTransferencia:
 		ftsal=np.append(ftsal,CompletarRecta(largoDelBus,vInicial,dato))
 		vInicial=dato
-	return ftsal
+	vFinal=vInicial
+	return ftsal, vFinal
 
 
 def CorregirSenal(senal,envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	return senal*AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus,	valorInicial)
+	ftCorrectora, vFinal =	AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus,	valorInicial)
+	senalCorregida=senal*ftCorrectora
+	return senalCorregida, vFinal
 
 
 
