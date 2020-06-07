@@ -11,8 +11,6 @@ OCTAVA DEL ERROR - ELIMINAO
 '''
 
 from numpy import array, diff, where, split
-import pyaudio
-import soundfile
 import numpy as np
 from math import log2, pow
 from scipy.stats import mode
@@ -182,7 +180,7 @@ def CompletarRecta(largo,	vInicial,	vFinal):
 	return(arrSal)
 
 def AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	funcionTransferencia=envolventeDeseada/envolventeObtenida
+	funcionTransferencia=envolventeDeseada/(envolventeObtenida+1)
 	vInicial=valorInicial
 	ftsal=np.asarray([])
 	for dato in funcionTransferencia:

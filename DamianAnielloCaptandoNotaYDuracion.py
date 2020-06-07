@@ -14,7 +14,7 @@ from numpy import array, diff, where, split
 import pyaudio
 import soundfile
 import numpy as np
-from math import log2, pow
+from math import log2, pow, sin
 
 import matplotlib.pyplot as plt
 import DamianAniello as DaAn
@@ -242,7 +242,7 @@ while len(MagEnElTiempo)<105:
 			capNota=True
 			arrNotasTocadas=[]
 			#encontrarRMS(senalACorregir)
-			notaCorregida,valorInicial=DaAn.CorregirSenal(senalACorregir,envSenalACorregir,5000,buffer_size,valorInicial=valorInicial)
+			notaCorregida,valorInicial=DaAn.CorregirSenal(senalACorregir,envSenalACorregir,50000,buffer_size,valorInicial=valorInicial)
 			senalCorregida=np.append(senalCorregida,notaCorregida)
 			senalACorregir=np.asarray([])
 			#senalACorregir=np.append(senalACorregir,signal)
@@ -296,7 +296,7 @@ tdet=np.arange(len(maDetallada))/samplerate
 plt.subplot(211)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
-plt.plot(tdet,maDetallada,"ok")
+plt.plot(tdet,maDetallada,"k")
 plt.grid()
 
 tam=np.arange(len(MagEnElTiempo))*number_samples/samplerate
@@ -310,7 +310,12 @@ plt.grid()
 plt.subplot(212)    # grafica de 3x2, subgrafica 4
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
-plt.plot(tdet,senalCorregida,"og")
+prueba=50000/np.asarray(MagEnElTiempo)
+
+plt.plot(tam,prueba,"r")
+
+prueba=prueba*np.asarray(MagEnElTiempo)
+plt.plot(tdet,senalCorregida,"g")
 plt.grid()
 
 
@@ -320,7 +325,7 @@ plt.xlabel('tiempo')
 plt.plot(tam,(MagEnElTiempo))
 plt.grid()
 
-
+print(type(senalCorregida))
 
 plt.show()
 print("*** done recording")
