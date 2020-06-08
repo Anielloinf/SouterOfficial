@@ -76,27 +76,35 @@ class Souter(QtWidgets.QMainWindow):
         self.senalConNota=np.asarray([])
         
 
+        self.variacionDeCambioNota=1000 #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
+        self.umbralRuido=5000
+
 
         while (self.ui.cntbtt==1):
             try:
                 
                 self.audiobuffer = self.stream.read(self.buffer_size)
                 self.signal1 = np.fromstring(self.audiobuffer, dtype=np.int16)
-                print("signal1 "+ str(len(self.signal1)))
+                
                 self.sig1RMS=DaAn.encontrarRMS(self.signal1)
 
-                if self.sig1RMS >5000:
+                print("signal1 "+ str(self.sig1RMS))
+
+                if self.sig1RMS >self.umbralRuido:
                     self.sig1FFT=np.fft.fft(self.signal1)
+                    self.sig1FFT=np.abs(self.sig1FFT)
+                    print('nota '+ str(max(self.sig0FFT)))
 
                     self.sig1FFT=self.sig1FFT[range(len(self.sig1FFT)//2)]/len(self.sig1FFT) # arreglo con la parte positiva del espectro en frecuencia
                 else:
                     self.sig1RMS=0
                     self.sig1FFT=np.arange(len(self.signal1)//2)*0
+                    print('silencio '+ str(max(self.sig0FFT)))
 
 
 
 
-                if max((self.sig1FFT-self.sig0FFT)*self.sig0Pico)>1000 or (self.sig0RMS==0 and self.sig1RMS!=0) or (self.sig0RMS!=0 and self.sig1RMS==0):
+                if max((self.sig1FFT-self.sig0FFT)*self.sig0Pico)>self.variacionDeCambioNota or (self.sig0RMS==0 and self.sig1RMS!=0) or (self.sig0RMS!=0 and self.sig1RMS==0):
                     '''
                     '''
                     self.tNota=len(self.senalConNota)/self.samplerate
@@ -109,7 +117,9 @@ class Souter(QtWidgets.QMainWindow):
                         self.nota=self.notasExtraidas[0]
 
 
+
                     self.ui.Crearnota(self.tNota, self.nota)
+                    print("Nota ######################  "+ self.nota)
 
                     self.senalConNota=self.signal1
 
