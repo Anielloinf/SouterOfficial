@@ -66,15 +66,14 @@ class Souter(QtWidgets.QMainWindow):
         self.threadpool = QThreadPool()
 
     def execute_this_fn(self):
-        self.arrgloNotacion=np.asarray([])
+        #self.arrgloNotacion=np.asarray([])
         self.MagEnElTiempo=[]
-        self.arrNotasTocadas=["Silencio"]
-        self.sigRMS0=0
-        self.df=0
-        self.capNota=False
-        self.magnitudes=np.asarray([])
-        self.maDetallada=np.asarray([])
-        self.arrPuntoRojo=np.asarray([]) #Quitar sino funciona
+        self.sig0FFT=np.arange(self.buffer_size//2)*0
+        self.sig0RMS=0
+        self.sig0Pico=self.sig0FFT+1
+
+
+        self.senalConNota=np.asarray([])
         
 
 
@@ -82,79 +81,54 @@ class Souter(QtWidgets.QMainWindow):
             try:
                 
                 self.audiobuffer = self.stream.read(self.buffer_size)
-                self.signal = np.fromstring(self.audiobuffer, dtype=np.int16)
-                print("signal "+ str(len(self.signal)))
+                self.signal1 = np.fromstring(self.audiobuffer, dtype=np.int16)
+                print("signal1 "+ str(len(self.signal1)))
+                self.sig1RMS=DaAn.encontrarRMS(self.signal1)
 
-                self.number_samples = len(self.signal)
-                self.sigRMS=DaAn.encontrarRMS(self.signal)
-                self.maDetallada=np.append(self.maDetallada,self.signal)
+                if self.sig1RMS >5000:
+                    self.sig1FFT=np.fft.fft(self.signal1)
+
+                    self.sig1FFT=self.sig1FFT[range(len(self.sig1FFT)//2)]/len(self.sig1FFT) # arreglo con la parte positiva del espectro en frecuencia
+                else:
+                    self.sig1RMS=0
+                    self.sig1FFT=np.arange(len(self.signal1)//2)*0
 
 
-        #audio_samples, sample_rate  = soundfile.read(audiobuffer, dtype='int16')
-                self.df=self.sigRMS-self.sigRMS0
-                print("number_samples "+ str(self.number_samples))
-                print(self.sigRMS)
 
-                if self.sigRMS<500 and self.capNota:
+
+                if max((self.sig1FFT-self.sig0FFT)*self.sig0Pico)>1000 or (self.sig0RMS==0 and self.sig1RMS!=0) or (self.sig0RMS!=0 and self.sig1RMS==0):
+                    '''
+                    '''
+                    self.tNota=len(self.senalConNota)/self.samplerate
                     
-                #MostraNotas ANIELLO!!
-                    print(self.arrNotasTocadas)
-                    self.nota=DaAn.Moda(self.arrNotasTocadas)#DaAn.Moda(self.arrNotasTocadas)
-                    print(self.nota)
-                    tNota=len(self.arrNotasTocadas)*self.buffer_size/self.samplerate
-                    print("\n"+"###########################  Largo de la nota "+ str(self.tNota)+" s  ###########################"+"\n")
-                    print("#####################       Comienza el silencio          ####################")
-                    self.capNota=False
-                    self.ui.Crearnota(self.tNota,self.nota)
-                    self.arrNotasTocadas=[]
+                    if self.sig0RMS==0:
 
-                if self.df>500:
-            #MostraNotas ANIELLO!!
-
-                    print(self.arrNotasTocadas)
-                    self.nota=DaAn.Moda(self.arrNotasTocadas)
-                    print(self.nota)
-                    self.tNota=len(self.arrNotasTocadas)*self.buffer_size/self.samplerate
-                    print("\n"+"###########################  Largo de la nota "+ str(self.tNota)+" s  ###########################"+"\n")
-                    print("-----------------------     Cambio sin silencio          ---------------------")
-                    self.capNota=True
-                    self.ui.Crearnota(self.tNota,self.nota)
-                    self.arrNotasTocadas=[]
+                        self.nota="KK"
+                    else:
+                        self.notasExtraidas,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,len(self.senalConNota),self.samplerate)
+                        self.nota=self.notasExtraidas[0]
 
 
-                if self.capNota:
+                    self.ui.Crearnota(self.tNota, self.nota)
 
-                    self.notasExtraidas,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.signal,self.number_samples,self.samplerate)
-            #signalRMSfourier=fourierRMS(normalization_data)
-                    self.notaExtraida=self.notasExtraidas[0]
-            
+                    self.senalConNota=self.signal1
+
 
                 else:
-                    self.notaExtraida="KK"
+                     
+                    self.senalConNota=np.append(self.senalConNota,self.signal1)
+
+
+                self.sig0RMS=self.sig1RMS
+                self.sig0FFT=self.sig1FFT*1
+                
+                
+                self.sig0Pico=(self.sig0FFT<max(self.sig0FFT)) 
+                ''' en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hace 0 
+                y el resto de los elementos valen 1 '''
+
+                
             
-
-                self.arrNotasTocadas.append(self.notaExtraida)
-
-
-                if self.sigRMS>500:
-                    self.sigRMS0=self.sigRMS
-
-
-
-                if self.df>0:
-                    if self.sigRMS0==0:
-                        self.sigRMS0=1
-                    self.puntoRojo=self.df/abs(self.sigRMS0)
-                else:
-                    if self.sigRMS==0:
-                        self.sigRMS=1
-                    self.puntoRojo=self.df/abs(self.sigRMS)
-
-                self.arrPuntoRojo=np.append(self.arrPuntoRojo,self.puntoRojo)
-
-
-        #MagEnElTiempo.append(signalRMSfourier)
-                self.MagEnElTiempo.append(self.sigRMS)
             except KeyboardInterrupt:
                 print("*** Ctrl+C pressed, exiting")
                 break
