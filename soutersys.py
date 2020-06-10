@@ -93,7 +93,7 @@ class Souter(QtWidgets.QMainWindow):
                 if self.sig1RMS >self.umbralRuido:
                     self.sig1FFT=np.fft.fft(self.signal1)
                     self.sig1FFT=np.abs(self.sig1FFT)
-                    print('nota '+ str(max(self.sig0FFT)))
+                    print('nota '+ str(max(self.sig1FFT)))
 
                     self.sig1FFT=self.sig1FFT[range(len(self.sig1FFT)//2)]/len(self.sig1FFT) # arreglo con la parte positiva del espectro en frecuencia
                 else:
