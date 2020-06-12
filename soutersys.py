@@ -113,8 +113,8 @@ class Souter(QtWidgets.QMainWindow):
 
                         self.nota="KK"
                     else:
-                        self.notasExtraidas,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,len(self.senalConNota),self.samplerate)
-                        self.nota=self.notasExtraidas[0]
+                        self.nota,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,self.samplerate)
+                        
 
 
 

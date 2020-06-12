@@ -147,27 +147,23 @@ def extraerFrecuenciaYMagnitud(indices, magnitudes, freq_bins, freq_threshold=2)
 	#print("Magn_components", magnitudes)
 	return extracted_freqs, magnitudes
 
-def EncontrarNotaEnSenal(signal,number_samples,samplerate):
+def EncontrarNotaEnSenal(signal,samplerate):
 	# FFT calculation
     # Calculo de FFT a signal
 
 	fft_data = np.fft.fft(signal)
-	normalization_data = np.abs(fft_data)/number_samples
+	normalization_data = np.abs(fft_data)/len(signal)
         
 	magnitude_values = normalization_data[range(len(fft_data)//2)] # Arreglo de magnitudes en el espectro de frecuencias positivas
         
-	freq_bins =  np.arange(number_samples//2) * samplerate/number_samples
-
-    # list of possible frequencies bins
-    #freq_bins, Lista de las frecuencias a las que se les calcula su magnitud con fft.fft(signal)
-
-	indices, magnitudes = findPeak(magnitude_values=magnitude_values, noise_level=50)
+	
+	magnitudNota=max(magnitude_values)
+	freqExtraida=np.argmax(magnitude_values)*samplerate/len(signal)
 
 #Arreglo con los indices de los segmentos mayores a noise_level y el promedio de la magnitudes de ese segmento
-
-	notasExtraidas, magnitudes2 = extraerFrecuenciaYMagnitud(indices=indices, magnitudes=magnitudes, freq_bins=freq_bins)
-	#frequencies tiene la frecuencia en el símbolo del segmento de nota que le corresponde
-	return notasExtraidas,magnitudes2
+	notaExtraida=pitching(freqExtraida)
+	
+	return notaExtraida,magnitudNota
 
 def Moda(Arreglo):
 	return mode(Arreglo)[0][0]
