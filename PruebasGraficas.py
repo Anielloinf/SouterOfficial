@@ -2,7 +2,7 @@ import math
 import numpy as np 
 import matplotlib.pyplot as plt 
 import scipy.io.wavfile as waves
-from SouterOfficial import DamianAniello as daan
+import DamianAniello as daan
 
 
 def TransFuriel(SonidoATransf):
@@ -19,7 +19,7 @@ def Ventana(ArregloASegmentar,InicioDeVent,largoDeVentana):
 	return ArregloASegmentar[InicioDeVent:InicioDeVent+largoDeVentana]
 
 
-def AnalizarAudio(sonido,largoDeVentana, muestreo):
+def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 	sonidoAux=np.asarray(sonido[[range(len(sonido)-len(sonido)%largoDeVentana)]])
 	print("sonidoAux1 " +str(len(sonido)))
 	sonidoAux=np.split(sonidoAux,len(sonidoAux)/largoDeVentana)
@@ -31,8 +31,8 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo):
 
 
 
-	umbralRuido=2000
-	variacionDeCambioNota=2000
+	umbralRuido=1000
+	variacionDeCambioNota=3000
 	Ventana0RMS=0
 	Ventana0FFT=np.arange(largoDeVentana//2)*0
 	Ventana0Pico=Ventana0FFT+1
@@ -42,7 +42,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo):
 	momento=0
 
 
-	archivo = open("PartituraTexto.txt", 'w')
+	archivo = open(archivoGenerado+"PartituraTexto.txt", 'w')
 	for Ventana in sonidoAux:
 
 
@@ -67,10 +67,10 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo):
 		 
 		 
 		if max((VentanaFFT-Ventana0FFT)*Ventana0Pico)>variacionDeCambioNota or (Ventana0RMS==0 and VentanaRMS!=0) or (Ventana0RMS!=0 and VentanaRMS==0):
-			print("##########################################################################################################################################################")
+			#print("##########################################################################################################################################################")
 
 			tNota=len(senalConNota)/muestreo
-			print("Ventana0RMS "+str(Ventana0RMS))     
+			#print("Ventana0RMS "+str(Ventana0RMS))    
 			if Ventana0RMS==0:
 				nota="KK"
 				
@@ -82,9 +82,9 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo):
                     #self.ui.Crearnota(self.tNota, self.nota)
 				#print('Nota ######################  '+ str(nota)+'  Tiempo ##########   '+str(tNota))
 
-			archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento en s	"+ str(momento*1024/muestreo)+"\n")
+			archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento s	"+ str(momento*len(Ventana)/muestreo)+" 	Momento muestras	" +str(momento)+"\n")
 
-			print("Nota "+ str(nota)+ " Duración "+ str(tNota)+ " Momento en s "+ str(momento*1024/muestreo)+"\n")
+			#print("Nota "+ str(nota)+ " Duración "+ str(tNota)+ " Momento en s "+ str(momento*1024/muestreo)+"\n")
 
 
 			senalConNota=Ventana
@@ -103,9 +103,10 @@ en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hac
 		
 
 
-carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Solfeo/'
-
-archivo = 'Ejercicio4.wav'
+#carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Clon Proyecto/SouterOfficial'
+carpeta=''
+archivo = 'Ejercicio3.wav'
+archivoGenerado=archivo[:len(archivo)-4]
 muestreo, sonido = waves.read(carpeta+archivo)
 if type(sonido[100])==np.ndarray:
 	sonido=np.average(sonido,1)	
@@ -118,10 +119,10 @@ print(muestreo)
 
 
 
-largoDeVentana=12288
+largoDeVentana=1024
 
 
-AnalizarAudio(sonido,largoDeVentana, muestreo)
+AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado)
 
 
 
@@ -144,7 +145,7 @@ MagEnFrecuencia3,frecEje3=TransFuriel(SonidoATransf3)
 Med3=daan.encontrarRMS(SonidoATransf3)
 
 
-plt.figure(archivo)
+'''plt.figure(archivo)
 plt.subplot(231)    
 plt.ylabel('MagEnFrec'+ str(Inicio1))
 plt.xlabel('frecuencia '+ str(Med1))
@@ -189,4 +190,4 @@ plt.plot(np.arange(len(sonido)),sonido,'g')
 
 
 plt.show()
-
+'''
