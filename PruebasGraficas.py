@@ -32,7 +32,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 
 	umbralRuido=1000
-	variacionDeCambioNota=3000
+	variacionDeCambioNota=1500
 	Ventana0RMS=0
 	Ventana0FFT=np.arange(largoDeVentana//2)*0
 	Ventana0Pico=Ventana0FFT+1
@@ -70,24 +70,33 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 			#print("##########################################################################################################################################################")
 
 			tNota=len(senalConNota)/muestreo
-			#print("Ventana0RMS "+str(Ventana0RMS))    
-			if Ventana0RMS==0:
-				nota="KK"
-				
-			else:
-				nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo)
+			
+			if tNota>0.0625:
+				#print("Ventana0RMS "+str(Ventana0RMS))
+				if Ventana0RMS==0:
+					nota="KK"
+				else:
+					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo)
+
+
+				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento s	"+ str(momento*len(Ventana)/muestreo)+" 	Momento muestras	" +str(momento)+"\n")
+
+
+
+				senalConNota=Ventana
 				
 
 
                     #self.ui.Crearnota(self.tNota, self.nota)
 				#print('Nota ######################  '+ str(nota)+'  Tiempo ##########   '+str(tNota))
-
-			archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento s	"+ str(momento*len(Ventana)/muestreo)+" 	Momento muestras	" +str(momento)+"\n")
+			else:
+				senalConNota=np.append(senalConNota,Ventana)
+			
 
 			#print("Nota "+ str(nota)+ " Duración "+ str(tNota)+ " Momento en s "+ str(momento*1024/muestreo)+"\n")
 
 
-			senalConNota=Ventana
+			
 		else:
 			#print("AJAAAA")
 			senalConNota=np.append(senalConNota,Ventana)
@@ -105,7 +114,7 @@ en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hac
 
 #carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Clon Proyecto/SouterOfficial'
 carpeta=''
-archivo = 'Ejercicio3.wav'
+archivo = 'Ejercicio5.wav'
 archivoGenerado=archivo[:len(archivo)-4]
 muestreo, sonido = waves.read(carpeta+archivo)
 if type(sonido[100])==np.ndarray:
@@ -125,8 +134,8 @@ largoDeVentana=1024
 AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado)
 
 
-
-Inicio1=376000
+'''
+Inicio1=22528
 SonidoATransf1=Ventana(sonido,Inicio1,largoDeVentana)
 MagEnFrecuencia1,frecEje1=TransFuriel(SonidoATransf1)
 Med1=daan.encontrarRMS(SonidoATransf1)
@@ -145,7 +154,7 @@ MagEnFrecuencia3,frecEje3=TransFuriel(SonidoATransf3)
 Med3=daan.encontrarRMS(SonidoATransf3)
 
 
-'''plt.figure(archivo)
+plt.figure(archivo)
 plt.subplot(231)    
 plt.ylabel('MagEnFrec'+ str(Inicio1))
 plt.xlabel('frecuencia '+ str(Med1))
