@@ -77,7 +77,7 @@ def fourierRMS(magnitudes):
 
 
 #Subrutina para filtrar ruido 
-def findPeak(magnitude_values, noise_level):
+def EncontrarPicos(magnitude_values, noise_level):
 
 	#el noise level es un valor que se ajusta manual e indica un filtro, a mayor noise level, menos valores quedaran vivos
 
@@ -106,9 +106,10 @@ def findPeak(magnitude_values, noise_level):
 				flag_start_looking = False
 				both_ends_indices[1] = i
 				# add both_ends_indices in to indices
-				indices.append(both_ends_indices)
-				magnitud_prom=fourierRMS(magnitude_values[both_ends_indices[0]:both_ends_indices[1]])##### evaluar si conviene definir la magnitud resultante con algo distinto al promedio
-				magnitudes.append(magnitud_prom)
+				
+				SegMayorQ=np.asarray(magnitude_values[both_ends_indices[0]:both_ends_indices[1]])##### evaluar si conviene definir la magnitud resultante con algo distinto al promedio
+				ArrDeSegmentos.append(SegMayorQ)
+				ArrIndDeSegmentos.append(range(both_ends_indices[0]:both_ends_indices[1]))
 
 
 	''' indices es un arreglo de los indices que definen los
@@ -165,8 +166,19 @@ def EncontrarNotaEnSenal(signal,samplerate):
 	
 	return notaExtraida,magnitudNota
 
-def Moda(Arreglo):
-	return mode(Arreglo)[0][0]
+def Moda(arreglo):
+	return mode(arreglo)[0][0]
+
+
+def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
+	for i in range(ArregloDeArreglos):
+		arregloDeMaximos=np.append(arregloDeMaximos,np.max(arregloDeArreglos[i]))
+
+		arregloDeIndicesMaximos=np.append(arregloDeIndicesMaximos,arregloDeIndices[i][np.argmax(arregloDeArreglos[i])])
+
+	return	arregloDeMaximos,arregloDeIndicesMaximos
+
+
 
 
 def CompletarRecta(largo,	vInicial,	vFinal):

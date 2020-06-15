@@ -134,8 +134,9 @@ largoDeVentana=1024
 AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado)
 
 
-'''
-Inicio1=22528
+# '''
+largoDeVentana=23*largoDeVentana
+Inicio1=0
 SonidoATransf1=Ventana(sonido,Inicio1,largoDeVentana)
 MagEnFrecuencia1,frecEje1=TransFuriel(SonidoATransf1)
 Med1=daan.encontrarRMS(SonidoATransf1)
@@ -199,4 +200,4 @@ plt.plot(np.arange(len(sonido)),sonido,'g')
 
 
 plt.show()
-'''
+
