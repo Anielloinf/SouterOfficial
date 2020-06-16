@@ -88,28 +88,50 @@ def EncontrarPicos(magnitude_values, noise_level):
 	low_values_indices = magnitude_values < noise_level  # En donde los valores son menores que el noise level
 	magnitude_values[low_values_indices] = 0  # Se vuelven cero todos los valores menores al noise level
    
-	indices = []
-	magnitudes=[]
+	ArrIndDeSegmentos = []
+	ArrDeSegmentos=[]
 	flag_start_looking = False
 
 	both_ends_indices = []
 
 	length = len(magnitude_values)
+	
 	for i in range(length):
+		
 		if magnitude_values[i] != splitter:
 			if not flag_start_looking:
 				flag_start_looking = True
 				both_ends_indices = [0, 0]
 				both_ends_indices[0] = i
+
+			if i==length-1 and flag_start_looking:
+				
+				both_ends_indices[1]=i
+				
+				
+
+
+				SegMayorQ=np.asarray(magnitude_values[both_ends_indices[0]:both_ends_indices[1]+1])##### Se le suma uno para incluir el último valor
+				ArrDeSegmentos.append(SegMayorQ)
+				ArrIndDeSegmentos.append(np.arange(both_ends_indices[0],both_ends_indices[1]+1))
+				
+				
+
+
+
+
 		else:
 			if flag_start_looking:
 				flag_start_looking = False
 				both_ends_indices[1] = i
-				# add both_ends_indices in to indices
 				
-				SegMayorQ=np.asarray(magnitude_values[both_ends_indices[0]:both_ends_indices[1]])##### evaluar si conviene definir la magnitud resultante con algo distinto al promedio
-				ArrDeSegmentos.append(SegMayorQ)
-				ArrIndDeSegmentos.append(range(both_ends_indices[0]:both_ends_indices[1]))
+				SegMayorQ=np.asarray(magnitude_values[both_ends_indices[0]:both_ends_indices[1]])
+				ArrDeSegmentos.append(SegMayorQ)	##### Se añade a SegMayorQ todos los valores mayores a noise_level
+				ArrIndDeSegmentos.append(np.arange(both_ends_indices[0],both_ends_indices[1]))
+	
+	
+	
+	indices,magnitudes =EncontrarMaximos(ArrDeSegmentos,ArrIndDeSegmentos)
 
 
 	''' indices es un arreglo de los indices que definen los
@@ -148,7 +170,7 @@ def extraerFrecuenciaYMagnitud(indices, magnitudes, freq_bins, freq_threshold=2)
 	#print("Magn_components", magnitudes)
 	return extracted_freqs, magnitudes
 
-def EncontrarNotaEnSenal(signal,samplerate):
+def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=50):
 	# FFT calculation
     # Calculo de FFT a signal
 
@@ -158,25 +180,63 @@ def EncontrarNotaEnSenal(signal,samplerate):
 	magnitude_values = normalization_data[range(len(fft_data)//2)] # Arreglo de magnitudes en el espectro de frecuencias positivas
         
 	
-	magnitudNota=max(magnitude_values)
-	freqExtraida=np.argmax(magnitude_values)*samplerate/len(signal)
+	indPicos,MagPicos=EncontrarPicos(magnitude_values, noise_level=50)
+	
+	indDeterminante,magnitudNota=DefinirIndiceDeterminante(indPicos,MagPicos,factorDeApreciacion)
+	
+	freqExtraida=(indDeterminante)*samplerate/len(signal)
+	#print(freqExtraida)
 
 #Arreglo con los indices de los segmentos mayores a noise_level y el promedio de la magnitudes de ese segmento
 	notaExtraida=pitching(freqExtraida)
 	
 	return notaExtraida,magnitudNota
 
+
 def Moda(arreglo):
 	return mode(arreglo)[0][0]
 
 
+def DefinirIndiceDeterminante(indicesDePicos,magnitudesDePicos,factorDeApreciacion):
+	indicesDePicos=list(indicesDePicos)
+	magnitudesDePicos=list(magnitudesDePicos)
+
+
+	picoDeterminante=0
+	indiceDeterminante=0
+	primeraVuleta=True
+
+
+	while primeraVuleta or(( factorDeApreciacion*picoDeterminante<max(magnitudesDePicos)) and (indiceDeterminante>indicesDePicos[magnitudesDePicos.index(max(magnitudesDePicos))])):
+		'''
+	Debido a que en teoría la nota de un sonido se define por la componente de menor frecuencia de la señal que lo compone, 
+	esta función  arroja la magnitud y el indice de la frecuencia que define a la nota del sonido analizado.
+		'''
+
+		primeraVuleta=False
+		
+		picoDeterminante=max(magnitudesDePicos)
+
+		indDeValorMaximo=magnitudesDePicos.index(max(magnitudesDePicos))# Representa la posición del valor maximo en magnitudesPico
+		
+		indiceDeterminante=indicesDePicos[indDeValorMaximo]# indiceDeterminante representa el indice en el espectro de frecuencia cuya magnitud definirá
+		#print('indiceDeterminante '+ str(indiceDeterminante))
+		magnitudesDePicos[indDeValorMaximo]=0 #El elemento maximo debe hacerse cero para poder rastrear el siguiente elemento
+
+	return indiceDeterminante,picoDeterminante
+
+
 def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
-	for i in range(ArregloDeArreglos):
+	arregloDeMaximos=[]
+	arregloDeIndicesMaximos=[]
+	for i in range(len(arregloDeArreglos)):
 		arregloDeMaximos=np.append(arregloDeMaximos,np.max(arregloDeArreglos[i]))
 
-		arregloDeIndicesMaximos=np.append(arregloDeIndicesMaximos,arregloDeIndices[i][np.argmax(arregloDeArreglos[i])])
+		
 
-	return	arregloDeMaximos,arregloDeIndicesMaximos
+		arregloDeIndicesMaximos=np.append(arregloDeIndicesMaximos,arregloDeIndices[i][np.argmax(arregloDeArreglos[i])])
+		
+	return	arregloDeIndicesMaximos,arregloDeMaximos
 
 
 

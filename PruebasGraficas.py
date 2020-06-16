@@ -31,8 +31,15 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 
 
-	umbralRuido=1000
-	variacionDeCambioNota=1500
+	umbralRuido=1000	#umbralRuido es el valor que determina cuando la señal deja o no de ser silencio
+	variacionDeCambioNota=1500 #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
+	
+
+	factorDeApreciacion=0.7		#factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
+	
+	noise_level=500		#noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
+
+
 	Ventana0RMS=0
 	Ventana0FFT=np.arange(largoDeVentana//2)*0
 	Ventana0Pico=Ventana0FFT+1
@@ -76,7 +83,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 				if Ventana0RMS==0:
 					nota="KK"
 				else:
-					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo)
+					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,factorDeApreciacion=factorDeApreciacion,noise_level=noise_level)
 
 
 				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento s	"+ str(momento*len(Ventana)/muestreo)+" 	Momento muestras	" +str(momento)+"\n")
@@ -114,7 +121,7 @@ en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hac
 
 #carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Clon Proyecto/SouterOfficial'
 carpeta=''
-archivo = 'Ejercicio5.wav'
+archivo = 'Ejercicio3.wav'
 archivoGenerado=archivo[:len(archivo)-4]
 muestreo, sonido = waves.read(carpeta+archivo)
 if type(sonido[100])==np.ndarray:
