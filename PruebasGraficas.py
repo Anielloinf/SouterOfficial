@@ -32,6 +32,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 
 	umbralRuido=1000	#umbralRuido es el valor que determina cuando la señal deja o no de ser silencio
+
 	variacionDeCambioNota=1500 #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
 	
 
@@ -41,8 +42,8 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 
 	Ventana0RMS=0
-	Ventana0FFT=np.arange(largoDeVentana//2)*0
-	Ventana0Pico=Ventana0FFT+1
+	Ventana0FFT=np.zeros(largoDeVentana//2)
+	Ventana0Pico=np.ones(largoDeVentana//2)
 
 	
 
@@ -66,7 +67,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 			#print("Ventana0RMS 0 "+str(Ventana0RMS))
 		else:
 			VentanaRMS=0
-			VentanaFFT=np.arange(len(Ventana)//2)*0
+			VentanaFFT=np.zeros(len(Ventana)//2)
 			#print('silencio '+ str(max(Ventana)))
 			#print(len(Ventana))
 
@@ -110,6 +111,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 		Ventana0RMS=VentanaRMS
 		Ventana0FFT=VentanaFFT*1
+		
 		Ventana0Pico=(Ventana0FFT<max(Ventana0FFT))
 		momento=momento+1 
 	archivo.close()

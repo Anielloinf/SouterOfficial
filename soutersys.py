@@ -68,16 +68,21 @@ class Souter(QtWidgets.QMainWindow):
     def execute_this_fn(self):
         #self.arrgloNotacion=np.asarray([])
         self.MagEnElTiempo=[]
-        self.sig0FFT=np.arange(self.buffer_size//2)*0
+        self.sig0FFT=np.zeros(self.buffer_size//2)
         self.sig0RMS=0
-        self.sig0Pico=self.sig0FFT+1
+        self.sig0Pico=np.ones(self.buffer_size//2)
 
 
         self.senalConNota=np.asarray([])
         
-
-        self.variacionDeCambioNota=1000 #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
-        self.umbralRuido=5000
+        self.umbralRuido=5000    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
+       
+        self.variacionDeCambioNota=1000     #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
+        #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
+       
+        self.factorDeApreciacion=0.7    #factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
+       
+        self.noise_level=500        #noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
 
 
         while (self.ui.cntbtt==1):
@@ -98,7 +103,7 @@ class Souter(QtWidgets.QMainWindow):
                     self.sig1FFT=self.sig1FFT[range(len(self.sig1FFT)//2)]/len(self.sig1FFT) # arreglo con la parte positiva del espectro en frecuencia
                 else:
                     self.sig1RMS=0
-                    self.sig1FFT=np.arange(len(self.signal1)//2)*0
+                    self.sig1FFT=np.zeros(len(self.signal1)//2)
                     print('silencio '+ str(max(self.sig0FFT)))
 
 
@@ -108,20 +113,25 @@ class Souter(QtWidgets.QMainWindow):
                     '''
                     '''
                     self.tNota=len(self.senalConNota)/self.samplerate
-                    
-                    if self.sig0RMS==0:
 
-                        self.nota="KK"
-                    else:
-                        self.nota,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,self.samplerate)
+                    if self.tNota>0.0625:
+
+                        if self.sig0RMS==0:
+
+                            self.nota="KK"
+                        else:
+                            self.nota,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,self.samplerate)
                         
 
 
 
-                    self.ui.Crearnota(self.tNota, self.nota)
-                    print("Nota ######################  "+ self.nota)
+                        self.ui.Crearnota(self.tNota, self.nota)
+                        print("Nota ######################  "+ self.nota)
 
-                    self.senalConNota=self.signal1
+                        self.senalConNota=self.signal1
+
+                    else:
+                        self.senalConNota=np.append(self.senalConNota,self.signal1)
 
 
                 else:
