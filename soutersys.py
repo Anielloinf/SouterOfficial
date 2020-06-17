@@ -66,14 +66,8 @@ class Souter(QtWidgets.QMainWindow):
         self.threadpool = QThreadPool()
 
     def execute_this_fn(self):
-        #self.arrgloNotacion=np.asarray([])
-        self.MagEnElTiempo=[]
-        self.sig0FFT=np.zeros(self.buffer_size//2)
-        self.sig0RMS=0
-        self.sig0Pico=np.ones(self.buffer_size//2)
-
-
-        self.senalConNota=np.asarray([])
+                
+        self.duracionMinima=0.0625  # a 120 bpm 0.0625 representa un 'cuarto de tiempo'
         
         self.umbralRuido=5000    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
        
@@ -84,6 +78,14 @@ class Souter(QtWidgets.QMainWindow):
        
         self.noise_level=500        #noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
 
+        
+
+        self.senalConNota=np.asarray([])
+        self.MagEnElTiempo=[]
+        self.sig0FFT=np.zeros(self.buffer_size//2)
+        self.sig0RMS=0
+        self.sig0Pico=np.ones(self.buffer_size//2)
+        
 
         while (self.ui.cntbtt==1):
             try:
@@ -114,7 +116,7 @@ class Souter(QtWidgets.QMainWindow):
                     '''
                     self.tNota=len(self.senalConNota)/self.samplerate
 
-                    if self.tNota>0.0625:
+                    if self.tNota>self.duracionMinima:
 
                         if self.sig0RMS==0:
 
