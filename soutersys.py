@@ -9,7 +9,8 @@ from PyQt5 import QtGui, QtWidgets
 from PyQt5.QtCore import *
 from screengui import Ui_MainWindow
 import numpy as np
-import aubio
+#import aubio
+import wave
 from math import log2, pow
 
 from scipy.stats import mode
@@ -56,7 +57,12 @@ class Souter(QtWidgets.QMainWindow):
 
 
         # setup pitch
-        
+        self.audioCompleto= []  #Señal con todo el sonido desde el ultimo play hasta la ultima pausa
+
+        self.wf=wave.open('SonidoCaptadoPorSoutersys.wav', 'wb')
+        self.wf.setnchannels(1)
+        self.wf.setsampwidth(self.p.get_sample_size(self.pyaudio_format))
+        self.wf.setframerate(self.samplerate)
 
         #Llamado a las funciones al iniciar o detener la grabacion
         self.ui.btn_grabar.clicked.connect(self.ActiveSouter)
@@ -69,7 +75,7 @@ class Souter(QtWidgets.QMainWindow):
                 
         self.duracionMinima=0.0625  # a 120 bpm 0.0625 representa un 'cuarto de tiempo'
         
-        self.umbralRuido=5000    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
+        self.umbralRuido=1200    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
        
         self.variacionDeCambioNota=1000     #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
         #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
@@ -85,6 +91,8 @@ class Souter(QtWidgets.QMainWindow):
         self.sig0FFT=np.zeros(self.buffer_size//2)
         self.sig0RMS=0
         self.sig0Pico=np.ones(self.buffer_size//2)
+
+
         
 
         while (self.ui.cntbtt==1):
@@ -92,6 +100,19 @@ class Souter(QtWidgets.QMainWindow):
                 
                 self.audiobuffer = self.stream.read(self.buffer_size)
                 self.signal1 = np.fromstring(self.audiobuffer, dtype=np.int16)
+
+
+                self.audioCompleto.append(self.signal1)# Audio para guardar
+
+                
+
+
+
+
+
+
+
+
                 
                 self.sig1RMS=DaAn.encontrarRMS(self.signal1)
 
@@ -172,6 +193,14 @@ class Souter(QtWidgets.QMainWindow):
                 self.ui.cntbtt=0
                 self.ui.btn_grabar.setIcon(QtGui.QIcon("imagenes/grabar.tif"))
                 self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/offline.png"))
+                print('##################   '+str(len(self.audioCompleto)))
+                
+
+                self.wf.writeframes(b''.join(self.audioCompleto))#Guardando audio
+                self.wf.close()
+
+
+
 
     def ResetSouter(self):
         self.ui.LimpiaLabel()

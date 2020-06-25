@@ -31,14 +31,14 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 
 
 
-	umbralRuido=1000	#umbralRuido es el valor que determina cuando la señal deja o no de ser silencio
+	umbralRuido=50	#umbralRuido es el valor que determina cuando la señal deja o no de ser silencio
 
-	variacionDeCambioNota=1500 #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
+	variacionDeCambioNota=200 #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
 	
 
 	factorDeApreciacion=0.7		#factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
 	
-	noise_level=500		#noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
+	noise_level=50		#noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
 
 
 	Ventana0RMS=0
@@ -50,7 +50,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 	momento=0
 
 
-	archivo = open(archivoGenerado+"PartituraTexto.txt", 'w')
+	archivo = open(carpeta+ archivoGenerado+"PartituraTexto.txt", 'w')
 	for Ventana in sonidoAux:
 
 
@@ -74,8 +74,12 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 		
 		 
 		 
-		if max((VentanaFFT-Ventana0FFT)*Ventana0Pico)>variacionDeCambioNota or (Ventana0RMS==0 and VentanaRMS!=0) or (Ventana0RMS!=0 and VentanaRMS==0):
+		#if max((VentanaFFT-Ventana0FFT)*Ventana0Pico)>variacionDeCambioNota or (Ventana0RMS==0 and VentanaRMS!=0) or (Ventana0RMS!=0 and VentanaRMS==0):
+
+
 			#print("##########################################################################################################################################################")
+		
+		if (VentanaRMS-Ventana0RMS)>variacionDeCambioNota or (Ventana0RMS==0 and VentanaRMS!=0) or (Ventana0RMS!=0 and VentanaRMS==0):
 
 			tNota=len(senalConNota)/muestreo
 			
@@ -87,7 +91,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado):
 					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,factorDeApreciacion=factorDeApreciacion,noise_level=noise_level)
 
 
-				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota)+ "	Momento s	"+ str(momento*len(Ventana)/muestreo)+" 	Momento muestras	" +str(momento)+"\n")
+				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota).ljust(18,'0')+ "	Momento s	"+ str(momento*len(Ventana)/muestreo).ljust(18,'0')+" 	Momento muestras	" +str(momento)+"\n")
 
 
 
@@ -122,8 +126,8 @@ en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hac
 
 
 #carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Clon Proyecto/SouterOfficial'
-carpeta=''
-archivo = 'Ejercicio3.wav'
+carpeta='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Solfeo/'
+archivo = 'Ejercicio3 Whatsapp.wav'			#Ejercicio2 Whatsapp
 archivoGenerado=archivo[:len(archivo)-4]
 muestreo, sonido = waves.read(carpeta+archivo)
 if type(sonido[100])==np.ndarray:
@@ -144,7 +148,7 @@ AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado)
 
 
 # '''
-largoDeVentana=23*largoDeVentana
+largoDeVentana=26*largoDeVentana
 Inicio1=0
 SonidoATransf1=Ventana(sonido,Inicio1,largoDeVentana)
 MagEnFrecuencia1,frecEje1=TransFuriel(SonidoATransf1)
@@ -164,7 +168,9 @@ MagEnFrecuencia3,frecEje3=TransFuriel(SonidoATransf3)
 Med3=daan.encontrarRMS(SonidoATransf3)
 
 
+
 plt.figure(archivo)
+'''
 plt.subplot(231)    
 plt.ylabel('MagEnFrec'+ str(Inicio1))
 plt.xlabel('frecuencia '+ str(Med1))
@@ -194,9 +200,12 @@ plt.xlabel('frecuencia '+ str(Med3))
 print("Largo de MagEnFrecuencia "+str(len(MagEnFrecuencia3)) )
 
 plt.plot(frecEje3,MagEnFrecuencia3/Med3,'xr')
+'''
 
 
-plt.subplot(212)    
+
+'''
+#plt.subplot(212)    
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
 #plt.plot(range(len(Funcion2)),Funcion2,'k')
@@ -205,7 +214,55 @@ plt.plot(np.arange(len(sonido)),sonido,'g')
 
 #plt.plot(np.arange(len(sonido))/muestreo,sonido,'g')
 
+############################
+#plt.subplot(211)    
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+#plt.plot(range(len(Funcion2)),Funcion2,'k')
 
+plt.plot(np.arange(len(sonido)-1),np.diff(sonido),'b')
+
+############################
+'''
+
+print("Largo de sonido"+ str(len(sonido)))
+sonidoAux=np.asarray(sonido[[range(len(sonido)-len(sonido)%1024)]])
+print("Largo de sonidoAux"+ str(len(sonidoAux)))
+sonidoAux=np.split(sonidoAux,len(sonidoAux)/1024)
+sonidoProm=np.asarray([])
+
+for Ventana in sonidoAux:
+	Ventana=Ventana*1
+	VentanaRMS=daan.encontrarRMS(Ventana)
+	sonidoProm=np.append(sonidoProm,VentanaRMS)
+
+
+#plt.subplot(212)
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+#plt.plot(range(len(Funcion2)),Funcion2,'k')
+
+plt.plot(np.arange(len(sonidoProm)),sonidoProm,'g')
+
+print("Largo de sonidoProm"+ str(len(sonidoProm)))
+print("Largo de sonidoAux"+ str(len(sonidoAux)))
+
+#plt.plot(np.arange(len(sonido))/muestreo,sonido,'g')
+
+############################
+#plt.subplot(211)    
+plt.ylabel('MagEnElTiempo')
+plt.xlabel('tiempo')
+#plt.plot(range(len(Funcion2)),Funcion2,'k')
+
+plt.plot(np.arange(len(sonidoProm)-1),np.diff(sonidoProm),'xb')
+
+
+plt.plot(np.arange(len(sonidoProm)-1),np.ones(len(sonidoProm)-1)*200,'r')
+
+plt.plot(np.arange(len(sonidoProm)-1),np.ones(len(sonidoProm)-1)*50,'r')
+
+plt.plot(np.arange(len(sonidoProm)-1),np.ones(len(sonidoProm)-1)*0,'k')
 
 
 plt.show()
