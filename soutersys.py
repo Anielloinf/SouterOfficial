@@ -88,9 +88,14 @@ class Souter(QtWidgets.QMainWindow):
 
         self.senalConNota=np.asarray([])
         self.MagEnElTiempo=[]
-        self.sig0FFT=np.zeros(self.buffer_size//2)
+        
         self.sig0RMS=0
-        self.sig0Pico=np.ones(self.buffer_size//2)
+
+        self.empezoDescenso=False
+
+        #self.sig0FFT=np.zeros(self.buffer_size//2)
+        
+        #self.sig0Pico=np.ones(self.buffer_size//2)
 
 
         
@@ -116,6 +121,11 @@ class Souter(QtWidgets.QMainWindow):
                 
                 self.sig1RMS=DaAn.encontrarRMS(self.signal1)
 
+                self.VariacionRMS=self.sig1RMS  -   self.sig0RMS
+
+
+
+                '''
                 print("signal1 "+ str(self.sig1RMS))
 
                 if self.sig1RMS >self.umbralRuido:
@@ -129,17 +139,19 @@ class Souter(QtWidgets.QMainWindow):
                     self.sig1FFT=np.zeros(len(self.signal1)//2)
                     print('silencio '+ str(max(self.sig0FFT)))
 
+                '''
 
 
+                self.tNota=len(self.senalConNota)/self.samplerate
 
-                if max((self.sig1FFT-self.sig0FFT)*self.sig0Pico)>self.variacionDeCambioNota or (self.sig0RMS==0 and self.sig1RMS!=0) or (self.sig0RMS!=0 and self.sig1RMS==0):
+                if (self.VariacionRMS>self.variacionDeCambioNota and self.empezoDescenso) or (self.sig0RMS<self.umbralRuido and self.sig1RMS>=self.umbralRuido) or (self.sig0RMS>=self.umbralRuido and self.sig1RMS<self.umbralRuido):
                     '''
                     '''
-                    self.tNota=len(self.senalConNota)/self.samplerate
+                    
 
                     if self.tNota>self.duracionMinima:
 
-                        if self.sig0RMS==0:
+                        if self.sig0RMS<self.umbralRuido:
 
                             self.nota="KK"
                         else:
@@ -156,17 +168,25 @@ class Souter(QtWidgets.QMainWindow):
                     else:
                         self.senalConNota=np.append(self.senalConNota,self.signal1)
 
+                    self.empezoDescenso=False
+
 
                 else:
                      
                     self.senalConNota=np.append(self.senalConNota,self.signal1)
 
+                    if self.tNota>self.duracionMinima and self.VariacionRMS<0:
+                        self.empezoDescenso=True
+
 
                 self.sig0RMS=self.sig1RMS
-                self.sig0FFT=self.sig1FFT*1
+                
+
+                #self.sig0FFT=self.sig1FFT*1
                 
                 
-                self.sig0Pico=(self.sig0FFT<max(self.sig0FFT)) 
+                #self.sig0Pico=(self.sig0FFT<max(self.sig0FFT)) 
+                
                 ''' en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hace 0 
                 y el resto de los elementos valen 1 '''
 

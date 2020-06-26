@@ -58,7 +58,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 		VentanaRMS=daan.encontrarRMS(Ventana)
 
 		#print("VentanaRMS ### "+ str(VentanaRMS))
-
+		'''
 		if VentanaRMS >umbralRuido:
 			VentanaFFT=np.fft.fft(Ventana)
 			VentanaFFT=np.abs(VentanaFFT)
@@ -70,6 +70,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 			VentanaFFT=np.zeros(len(Ventana)//2)
 			#print('silencio '+ str(max(Ventana)))
 			#print(len(Ventana))
+		'''
 
 		
 		 
@@ -81,14 +82,14 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 		VariacionRMS=(VentanaRMS-Ventana0RMS)
 		tNota=len(senalConNota)/muestreo
 
-		if (VariacionRMS>variacionDeCambioNota and EmpezoDescenso) or (Ventana0RMS==0 and VentanaRMS!=0) or (Ventana0RMS!=0 and VentanaRMS==0):
+		if (VariacionRMS>variacionDeCambioNota and EmpezoDescenso) or (Ventana0RMS<umbralRuido and VentanaRMS>=umbralRuido) or (Ventana0RMS>=umbralRuido and VentanaRMS<umbralRuido):
 
 			
 			
 			if tNota>0.0625:
 				#print("Ventana0RMS "+str(Ventana0RMS))
 				print("Hola por aqui"+ str(momento))
-				if Ventana0RMS==0:
+				if Ventana0RMS<umbralRuido:
 					nota="KK"
 				else:
 					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,factorDeApreciacion=factorDeApreciacion,noise_level=noise_level)
@@ -123,9 +124,9 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 
 
 		Ventana0RMS=VentanaRMS
-		Ventana0FFT=VentanaFFT*1
+		'''Ventana0FFT=VentanaFFT*1
 		
-		Ventana0Pico=(Ventana0FFT<max(Ventana0FFT))
+		Ventana0Pico=(Ventana0FFT<max(Ventana0FFT))'''
 		momento=momento+1 
 	archivo.close()
 ''' 
@@ -185,6 +186,7 @@ Med3=daan.encontrarRMS(SonidoATransf3)
 
 
 plt.figure(archivo+" Ventanas de "+ str(largoDeVentana))
+
 '''
 plt.subplot(231)    
 plt.ylabel('MagEnFrec'+ str(Inicio1))
