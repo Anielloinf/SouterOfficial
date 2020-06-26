@@ -17,7 +17,7 @@ from scipy.stats import mode
 
 import matplotlib.pyplot as plt
 
-Fotas=['Nada','C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1','A1', 'A#1', 'B1', 
+Fotas=['KK','C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1','A1', 'A#1', 'B1', 
 'C2', 'C#2', 'D2', 'D#2', 'E2', 'F2', 'F#2', 'G2', 'G#2','A2', 'A#2', 'B2', 
 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3','A3', 'A#3', 'B3',  
 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4','A4', 'A#4', 'B4', 
@@ -130,7 +130,9 @@ def EncontrarPicos(magnitude_values, noise_level):
 				ArrIndDeSegmentos.append(np.arange(both_ends_indices[0],both_ends_indices[1]))
 	
 	
-	
+	if len(ArrDeSegmentos)==0:		#se coloca este if para evitar errores al no encontrar valores superiores a noise_level
+		ArrDeSegmentos,ArrIndDeSegmentos=[0],[0] 
+
 	indices,magnitudes =EncontrarMaximos(ArrDeSegmentos,ArrIndDeSegmentos)
 
 
@@ -179,8 +181,12 @@ def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=5
         
 	magnitude_values = normalization_data[range(len(fft_data)//2)] # Arreglo de magnitudes en el espectro de frecuencias positivas
         
-	
-	indPicos,MagPicos=EncontrarPicos(magnitude_values, noise_level=50)
+	print("Largo magnitude_values "+str(len(magnitude_values)))
+
+
+	indPicos,MagPicos=EncontrarPicos(magnitude_values, noise_level=noise_level)
+	print("Largo indPicos "+str(len(indPicos)))
+	print("Largo MagPicos "+str(len(MagPicos)))
 	
 	indDeterminante,magnitudNota=DefinirIndiceDeterminante(indPicos,MagPicos,factorDeApreciacion)
 	
@@ -192,9 +198,6 @@ def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=5
 	
 	return notaExtraida,magnitudNota
 
-
-def Moda(arreglo):
-	return mode(arreglo)[0][0]
 
 
 def DefinirIndiceDeterminante(indicesDePicos,magnitudesDePicos,factorDeApreciacion):
@@ -241,27 +244,6 @@ def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
 
 
 
-def CompletarRecta(largo,	vInicial,	vFinal):
-	
-	arrSal=np.arange(largo)*(vFinal-vInicial)/largo
-	arrSal=arrSal+vInicial
-	return(arrSal)
-
-def AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	funcionTransferencia=envolventeDeseada/(envolventeObtenida+1)
-	vInicial=valorInicial
-	ftsal=np.asarray([])
-	for dato in funcionTransferencia:
-		ftsal=np.append(ftsal,CompletarRecta(largoDelBus,vInicial,dato))
-		vInicial=dato
-	vFinal=vInicial
-	return ftsal, vFinal
-
-
-def CorregirSenal(senal,envolventeObtenida,	envolventeDeseada,	largoDelBus=1,	valorInicial=0):
-	ftCorrectora, vFinal =	AplanarEnvolvente(envolventeObtenida,	envolventeDeseada,	largoDelBus,	valorInicial)
-	senalCorregida=senal*ftCorrectora
-	return senalCorregida, vFinal
 
 
 
