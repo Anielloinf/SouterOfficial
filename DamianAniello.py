@@ -65,15 +65,6 @@ def pitching(freq):
 
 	return	nota #+' '+ str(freq)
 
-def pitchingArreglo(freqs):
-	notaExtraidas=[]
-	for freq in freqs:
-		notaExtraidas.append(pitching(freq))
-
-	return notaExtraidas
-
-
-
 # En funcion de las muestras, entrega el tiempo de duracion de las notas 
 def encontrarRMS(signal):
 	signalAux=signal/np.sqrt(len(signal)) 
@@ -83,12 +74,6 @@ def encontrarRMS(signal):
 	rms2=np.sum(signalAux**2) #rms2 es el valor rms de signal elevado al cuadrado
 
 	return np.sqrt(rms2) #Retorna el valor rms del arreglo signal, requiere que magnitudes haya sido normalizada
-
-
-def fourierRMS(magnitudes):
-	rmsFou=np.sum(magnitudes**2)
-
-	return np.sqrt(rmsFou)
 
 
 #Subrutina para filtrar ruido 
@@ -114,6 +99,7 @@ def EncontrarPicos(magnitude_values, noise_level):
 	for i in range(length):
 		
 		if magnitude_values[i] != splitter:
+
 			if not flag_start_looking:
 				flag_start_looking = True
 				both_ends_indices = [0, 0]
@@ -123,9 +109,6 @@ def EncontrarPicos(magnitude_values, noise_level):
 				
 				both_ends_indices[1]=i
 				
-				
-
-
 				SegMayorQ=np.asarray(magnitude_values[both_ends_indices[0]:both_ends_indices[1]+1])##### Se le suma uno para incluir el último valor
 				ArrDeSegmentos.append(SegMayorQ)
 				ArrIndDeSegmentos.append(np.arange(both_ends_indices[0],both_ends_indices[1]+1))
@@ -136,6 +119,7 @@ def EncontrarPicos(magnitude_values, noise_level):
 
 
 		else:
+
 			if flag_start_looking:
 				flag_start_looking = False
 				both_ends_indices[1] = i
@@ -155,37 +139,6 @@ def EncontrarPicos(magnitude_values, noise_level):
         segmentos cuya zona intermedia es mayor al noise_level'''
      
 	return indices, magnitudes  
-
-def extraerFrecuenciaYMagnitud(indices, magnitudes, freq_bins, freq_threshold=2):
-    
-	extracted_freqs = []
-
-	for index in indices:
-		freqs_range = freq_bins[index[0]: index[1]]
-		#avg_freq = round(np.average(freqs_range)) #Promedia y redondea la frecuencia freqs_range
-
-		avg_freq = np.average(freqs_range) #Promedia la frecuencia freqs_range
-		'''Al no redondear es posible que resulten valores muy parecidos cuando la oscilación sobre
-		el noise_value sea de alta frecuencia
-		'''
-		if avg_freq not in extracted_freqs:
-			extracted_freqs.append(avg_freq)
-		
-		# group extracted frequency by nearby=freq_threshold (tolerate gaps=freq_threshold)
-	group_similar_values = split(extracted_freqs, where(diff(extracted_freqs) > freq_threshold)[0]+1 )
-
-	# calculate the average of similar value
-	extracted_freqs = []
-	for group in group_similar_values:
-		listfrec=(np.average(group))
-		
-		'''if listfrec>30 and listfrec<4000:
-			extracted_freqs.append(pitching(listfrec))'''
-		extracted_freqs.append(pitching(listfrec))
-    
-	#print("freq_components", extracted_freqs)
-	#print("Magn_components", magnitudes)
-	return extracted_freqs, magnitudes
 
 def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=50):
 	# FFT calculation
@@ -250,35 +203,6 @@ def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=5
 
 
 
-def DefinirIndiceDeterminante(indicesDePicos,magnitudesDePicos,factorDeApreciacion):
-	indicesDePicos=list(indicesDePicos)
-	magnitudesDePicos=list(magnitudesDePicos)
-
-
-	picoDeterminante=0
-	indiceDeterminante=0
-	primeraVuleta=True
-
-
-	while primeraVuleta or(( factorDeApreciacion*picoDeterminante<max(magnitudesDePicos)) and (indiceDeterminante>indicesDePicos[magnitudesDePicos.index(max(magnitudesDePicos))])):
-		'''
-	Debido a que en teoría la nota de un sonido se define por la componente de menor frecuencia de la señal que lo compone, 
-	esta función  arroja la magnitud y el indice de la frecuencia que define a la nota del sonido analizado.
-		'''
-
-		primeraVuleta=False
-		
-		picoDeterminante=max(magnitudesDePicos)
-
-		indDeValorMaximo=magnitudesDePicos.index(max(magnitudesDePicos))# Representa la posición del valor maximo en magnitudesPico
-		
-		indiceDeterminante=indicesDePicos[indDeValorMaximo]# indiceDeterminante representa el indice en el espectro de frecuencia cuya magnitud definirá
-		#print('indiceDeterminante '+ str(indiceDeterminante))
-		magnitudesDePicos[indDeValorMaximo:]=np.zeros(len(magnitudesDePicos[indDeValorMaximo:])) #El elemento maximo y todos los valores de mayor frecuencia deben hacerse cero para poder rastrear el siguiente elemento
-
-	return indiceDeterminante,picoDeterminante
-
-
 def DefinirIndiceDeNota(indices,arreglo,max=2**(1/24),min=2**(-1/24)):
 	indMax=np.argmax(arreglo)
 	indMax=indices[indMax]
@@ -321,25 +245,3 @@ def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
 	return	arregloDeIndicesMaximos,arregloDeMaximos
 
 
-def QuitarOctavas(notasObtenidas):
-	notasSinOctavas=[]
-	for nota in notasObtenidas:
-		notasSinOctavas.append(nota[:-1])
-
-	return notasSinOctavas
-
-
-
-
-
-
-
-
-
-
-
-
-	
-
-
-		
