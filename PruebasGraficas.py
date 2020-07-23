@@ -50,7 +50,8 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 	momento=0
 
 
-	archivo = open(carpeta+ archivoGenerado+"PartituraTexto"+str(largoDeVentana)+".txt", 'w')
+	#archivo = open(carpeta+ archivoGenerado+"PartituraTexto Fa "+str(factorDeApreciacion)+".txt", 'w')
+	archivo = open(carpeta+ archivoGenerado+"PartituraTexto La mero mera.txt", 'w')
 	for Ventana in sonidoAux:
 
 
@@ -95,7 +96,8 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,factorDeApreciacion=factorDeApreciacion,noise_level=noise_level)
 
 
-				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota).ljust(18,'0')+ "	Momento s	"+ str(momento*len(Ventana)/muestreo).ljust(18,'0')+" 	Momento muestras	" +str(momento)+"\n")
+				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota).ljust(18,'0')+ "	Momento s	"
+					+ str(momento*len(Ventana)/muestreo).ljust(18,'0')+" 	Momento muestras	" +str(momento)+"\n")
 
 
 
@@ -136,12 +138,14 @@ en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hac
 
 
 #carpeta ='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Clon Proyecto/SouterOfficial'
-carpeta='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Solfeo/'
 
+#carpeta='C:/Users/Damian E Sanz M/Documents/UcDamian/TesisDocumentos2/Solfeo/'
+carpeta="C:/Users/Damian E Sanz M/Desktop/Prof Wilmer/Resultados 50 200 0.7 50/"
 
-archivo = 'Ejercicio2 Whatsapp.wav'			#Ejercicio2 Whatsapp
+#archivo = 'Ejercicio2 Whatsapp.wav'			#Ejercicio2 Whatsapp
 
-
+archivo="Ejer 1 SonidoCaptadoPorSoutersys.wav"
+#archivo='F4.wav'
 
 
 archivoGenerado=archivo[:len(archivo)-4]
@@ -160,19 +164,26 @@ print(muestreo)
 largoDeVentana=1024
 
 
-AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado)
+AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50,variacionDeCambioNota=200,factorDeApreciacion=0.6,noise_level=50)
 
 
-'''
-largoDeVentana=26*largoDeVentana
-Inicio1=0
-SonidoATransf1=Ventana(sonido,Inicio1,largoDeVentana)
+Inicio1=478*largoDeVentana
+largoDeVentana1=(492)*largoDeVentana-Inicio1
+
+SonidoATransf1=Ventana(sonido,Inicio1,largoDeVentana1)
 MagEnFrecuencia1,frecEje1=TransFuriel(SonidoATransf1)
+
+frecEje1,MagEnFrecuencia1=daan.EncontrarPicos(MagEnFrecuencia1,50)
+frecEje1*=muestreo/(largoDeVentana1)
 Med1=daan.encontrarRMS(SonidoATransf1)
 
 
-Inicio2=Inicio1+largoDeVentana
-SonidoATransf2=Ventana(sonido,Inicio2,largoDeVentana)
+
+
+Inicio2=657*largoDeVentana
+largoDeVentana2=(681)*largoDeVentana-Inicio2
+
+SonidoATransf2=Ventana(sonido,Inicio2,largoDeVentana2)
 MagEnFrecuencia2,frecEje2=TransFuriel(SonidoATransf2)
 Med2=daan.encontrarRMS(SonidoATransf2)
 
@@ -182,10 +193,36 @@ SonidoATransf3=Ventana(sonido,Inicio3,largoDeVentana)
 MagEnFrecuencia3,frecEje3=TransFuriel(SonidoATransf3)
 
 Med3=daan.encontrarRMS(SonidoATransf3)
-'''
+
 
 
 plt.figure(archivo+" Ventanas de "+ str(largoDeVentana))
+
+
+plt.subplot(221)    
+plt.ylabel('MagEnFrec'+ str(Inicio1//largoDeVentana))
+plt.xlabel('frecuencia '+ str(Med1))
+#plt.plot(t,FResultante)
+#plt.plot(np.arange(len(MagRms)),MagRms)
+print("Largo de MagEnFrecuencia "+str(len(MagEnFrecuencia1)) )
+
+#plt.plot(np.arange(len(MagRms)),daan.AplanarEnvolvente(MagRms,5000)[0]*MagRms)
+
+plt.plot(frecEje1,MagEnFrecuencia1, 'pr')
+
+
+
+plt.subplot(222)    
+plt.ylabel('MagEnFrec'+ str(Inicio2//largoDeVentana))
+plt.xlabel('frecuencia '+ str(Med1))
+#plt.plot(t,FResultante)
+#plt.plot(np.arange(len(MagRms)),MagRms)
+print("Largo de MagEnFrecuencia "+str(len(MagEnFrecuencia1)) )
+
+#plt.plot(np.arange(len(MagRms)),daan.AplanarEnvolvente(MagRms,5000)[0]*MagRms)
+
+plt.plot(frecEje2,MagEnFrecuencia2, 'pb')
+
 
 '''
 plt.subplot(231)    
@@ -254,7 +291,7 @@ for Ventana in sonidoAux:
 	sonidoProm=np.append(sonidoProm,VentanaRMS)
 
 
-#plt.subplot(212)
+plt.subplot(212)
 plt.ylabel('MagEnElTiempo')
 plt.xlabel('tiempo')
 #plt.plot(range(len(Funcion2)),Funcion2,'k')
@@ -267,9 +304,9 @@ print("Largo de sonidoAux"+ str(len(sonidoAux)))
 #plt.plot(np.arange(len(sonido))/muestreo,sonido,'g')
 
 ############################
-#plt.subplot(211)    
+'''plt.subplot(211)    
 plt.ylabel('MagEnElTiempo')
-plt.xlabel('tiempo')
+plt.xlabel('tiempo')'''
 #plt.plot(range(len(Funcion2)),Funcion2,'k')
 
 plt.plot(np.arange(len(sonidoProm)-1),np.diff(sonidoProm),'xb')
