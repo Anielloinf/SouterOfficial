@@ -22,9 +22,16 @@ Fotas=['KK','C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1','A1', 'A#1'
 'C3', 'C#3', 'D3', 'D#3', 'E3', 'F3', 'F#3', 'G3', 'G#3','A3', 'A#3', 'B3',  
 'C4', 'C#4', 'D4', 'D#4', 'E4', 'F4', 'F#4', 'G4', 'G#4','A4', 'A#4', 'B4', 
 'C5', 'C#5', 'D5', 'D#5', 'E5', 'F5', 'F#5', 'G5', 'G#5','A5', 'A#5', 'B5',  
-'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6','A6', 'A#6', 'B6',  ]
+'C6', 'C#6', 'D6', 'D#6', 'E6', 'F6', 'F#6', 'G6', 'G#6','A6', 'A#6', 'B6', 'A7' ]
 #'A0', 'A#0', 'B0', 'C0', 'C#0', 'D0', 'D#0', 'E0', 'F0', 'F#0', 'G0', 'G#0',
 #'A7', 'A#7', 'B7', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7']
+
+FotasSinOctava=['KK','C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 
+'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 
+'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',  
+'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',
+'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',
+'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 'A' ]
 
 BordesFotas=np.array([31.772199163987505, 33.66147244087802, 35.66308775290277, 37.78372530509745,
  40.03046252816015, 42.41079769871837, 44.93267496413025, 47.604510855337864, 50.43522237625692, 
@@ -57,6 +64,14 @@ def pitching(freq):
 	nota=Fotas[q]
 
 	return	nota #+' '+ str(freq)
+
+def pitchingArreglo(freqs):
+	notaExtraidas=[]
+	for freq in freqs:
+		notaExtraidas.append(pitching(freq))
+
+	return notaExtraidas
+
 
 
 # En funcion de las muestras, entrega el tiempo de duracion de las notas 
@@ -131,7 +146,7 @@ def EncontrarPicos(magnitude_values, noise_level):
 	
 	
 	if len(ArrDeSegmentos)==0:		#se coloca este if para evitar errores al no encontrar valores superiores a noise_level
-		ArrDeSegmentos,ArrIndDeSegmentos=[0],[0] 
+		ArrDeSegmentos,ArrIndDeSegmentos=[[0]],[[0]] 
 
 	indices,magnitudes =EncontrarMaximos(ArrDeSegmentos,ArrIndDeSegmentos)
 
@@ -184,17 +199,52 @@ def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=5
 	print("Largo magnitude_values "+str(len(magnitude_values)))
 
 
-	indPicos,MagPicos=EncontrarPicos(magnitude_values, noise_level=noise_level)
+	indPicos,magPicos=EncontrarPicos(magnitude_values, noise_level=noise_level)
 	print("Largo indPicos "+str(len(indPicos)))
-	print("Largo MagPicos "+str(len(MagPicos)))
+	print("Largo magPicos "+str(len(magPicos)))
 	
-	indDeterminante,magnitudNota=DefinirIndiceDeterminante(indPicos,MagPicos,factorDeApreciacion)
-	
-	freqExtraida=(indDeterminante)*samplerate/len(signal)
-	#print(freqExtraida)
 
-#Arreglo con los indices de los segmentos mayores a noise_level y el promedio de la magnitudes de ese segmento
-	notaExtraida=pitching(freqExtraida)
+	################# Primera Propuesta Inicio
+	'''indDeterminante,magnitudNota=DefinirIndiceDeterminante(indPicos,magPicos,factorDeApreciacion)
+	freqExtraida=(indDeterminante)*samplerate/len(signal)
+	notaExtraida=pitching(freqExtraida)'''
+
+	################# Primera Propuesta Fin
+
+
+
+
+	################# Segunda Propuesta Inicio
+	indDeterminante,magnitudNota	=	DefinirIndiceDeNota(indPicos,magPicos,max=2**(1/24),min=2**(-1/24))
+	freqExtraida	=	(indDeterminante)*samplerate/len(signal)
+	print('freqExtraida '+ str(freqExtraida))
+	print('\n'+'################################')
+	notaExtraida	=	pitching(freqExtraida)
+
+
+	################# Segunda Propuesta Fin
+
+
+
+
+
+	################### Tercera Propuesta Inicio
+	'''freqPicos = indPicos * samplerate / len(signal)
+	notasPico = pitchingArreglo(freqPicos)
+	notaMax = notasPico[np.argmax(magPicos)]
+	notasSinOctavas = QuitarOctavas(notasPico)
+
+	
+
+
+	notaExtraida = notasPico[notasSinOctavas.index(notaMax[:-1])]
+
+	magnitudNota = magPicos[notasSinOctavas.index(notaMax[:-1])]
+
+	'''
+	################### Tercera Propuesta Fin
+
+	
 	
 	return notaExtraida,magnitudNota
 
@@ -224,9 +274,38 @@ def DefinirIndiceDeterminante(indicesDePicos,magnitudesDePicos,factorDeApreciaci
 		
 		indiceDeterminante=indicesDePicos[indDeValorMaximo]# indiceDeterminante representa el indice en el espectro de frecuencia cuya magnitud definirá
 		#print('indiceDeterminante '+ str(indiceDeterminante))
-		magnitudesDePicos[indDeValorMaximo]=0 #El elemento maximo debe hacerse cero para poder rastrear el siguiente elemento
+		magnitudesDePicos[indDeValorMaximo:]=np.zeros(len(magnitudesDePicos[indDeValorMaximo:])) #El elemento maximo y todos los valores de mayor frecuencia deben hacerse cero para poder rastrear el siguiente elemento
 
 	return indiceDeterminante,picoDeterminante
+
+
+def DefinirIndiceDeNota(indices,arreglo,max=2**(1/24),min=2**(-1/24)):
+	indMax=np.argmax(arreglo)
+	indMax=indices[indMax]
+
+	indNota=0
+	picoNota=0
+
+	salir=False
+	i=0
+
+	while (not salir) and i<len(arreglo)	:
+		
+		cociente=	indMax/(round(indMax/indices[i])*indices[i])
+
+		if cociente<=max and cociente>=min:
+			
+			indNota=indices[i]
+			picoNota=arreglo[i]
+			salir=True
+			# El metodo termina al encontrar el primer término porque se están inspeccionando los índices de menor a mayor
+			print('indNota ######'+ str(indNota))
+			print('picoNota '+ str(picoNota))
+			print('indMax #######'+ str(indMax))
+
+		i=i+1
+	return	indNota,	picoNota
+
 
 
 def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
@@ -242,7 +321,12 @@ def EncontrarMaximos(arregloDeArreglos, arregloDeIndices):
 	return	arregloDeIndicesMaximos,arregloDeMaximos
 
 
+def QuitarOctavas(notasObtenidas):
+	notasSinOctavas=[]
+	for nota in notasObtenidas:
+		notasSinOctavas.append(nota[:-1])
 
+	return notasSinOctavas
 
 
 
