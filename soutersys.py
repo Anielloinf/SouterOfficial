@@ -75,22 +75,20 @@ class Souter(QtWidgets.QMainWindow):
                 
         self.duracionMinima=0.0625  # a 120 bpm 0.0625 representa un 'cuarto de tiempo'
         
-        self.umbralRuido=1200    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
+        self.umbralRuido=50    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
        
-        self.variacionDeCambioNota=1000     #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
+        self.variacionDeCambioNota=200     #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
         #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
        
-        self.factorDeApreciacion=0.7    #factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
+        self.factorDeApreciacion=0.6    #factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
        
-        self.noise_level=500        #noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
+        self.noise_level=50        #noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
 
         
 
         self.senalConNota=np.asarray([])
         self.MagEnElTiempo=[]
-        
         self.sig0RMS=0
-
         self.empezoDescenso=False
 
         #self.sig0FFT=np.zeros(self.buffer_size//2)
@@ -110,43 +108,22 @@ class Souter(QtWidgets.QMainWindow):
                 self.audioCompleto.append(self.signal1)# Audio para guardar
 
                 
-
-
-
-
-
-
-
-
-                
                 self.sig1RMS=DaAn.encontrarRMS(self.signal1)
 
                 self.VariacionRMS=self.sig1RMS  -   self.sig0RMS
 
 
 
-                '''
-                print("signal1 "+ str(self.sig1RMS))
-
-                if self.sig1RMS >self.umbralRuido:
-                    self.sig1FFT=np.fft.fft(self.signal1)
-                    self.sig1FFT=np.abs(self.sig1FFT)
-                    print('nota '+ str(max(self.sig1FFT)))
-
-                    self.sig1FFT=self.sig1FFT[range(len(self.sig1FFT)//2)]/len(self.sig1FFT) # arreglo con la parte positiva del espectro en frecuencia
-                else:
-                    self.sig1RMS=0
-                    self.sig1FFT=np.zeros(len(self.signal1)//2)
-                    print('silencio '+ str(max(self.sig0FFT)))
-
-                '''
-
+                
 
                 self.tNota=len(self.senalConNota)/self.samplerate
 
-                if (self.VariacionRMS>self.variacionDeCambioNota and self.empezoDescenso) or (self.sig0RMS<self.umbralRuido and self.sig1RMS>=self.umbralRuido) or (self.sig0RMS>=self.umbralRuido and self.sig1RMS<self.umbralRuido):
-                    '''
-                    '''
+
+                self.cambioNotaASilencio    =   (self.VariacionRMS  >   self.variacionDeCambioNota and self.empezoDescenso)
+                self.cambioSilencioANota    =   (self.sig0RMS<self.umbralRuido and self.sig1RMS>=self.umbralRuido)
+                self.cambioNotaANota        =   (self.sig0RMS>=self.umbralRuido and self.sig1RMS<self.umbralRuido)
+
+                if self.cambioNotaASilencio or self.cambioSilencioANota or self.cambioNotaANota:
                     
 
                     if self.tNota>self.duracionMinima:
@@ -155,8 +132,8 @@ class Souter(QtWidgets.QMainWindow):
 
                             self.nota="KK"
                         else:
-                            self.nota,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,self.samplerate)
-                        
+                            self.nota,self.magnitudes=DaAn.EncontrarNotaEnSenal(self.senalConNota,self.samplerate,factorDeApreciacion=self.factorDeApreciacion,noise_level=self.noise_level)
+                            ###### Veririficar uso de factorDeApreciacion, borrar para version final
 
 
 
