@@ -83,7 +83,13 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 		VariacionRMS=(VentanaRMS-Ventana0RMS)
 		tNota=len(senalConNota)/muestreo
 
-		if (VariacionRMS>variacionDeCambioNota and EmpezoDescenso) or (Ventana0RMS<umbralRuido and VentanaRMS>=umbralRuido) or (Ventana0RMS>=umbralRuido and VentanaRMS<umbralRuido):
+		cambioNotaASilencio	=	(VariacionRMS	>	variacionDeCambioNota) 	and 	EmpezoDescenso
+		cambioSilencioANota =	(Ventana0RMS 	<	umbralRuido) 			and 	VentanaRMS>=umbralRuido
+		cambioNotaANota		=	(Ventana0RMS 	>=	umbralRuido)			and 	VentanaRMS<umbralRuido
+
+
+
+		if (cambioNotaASilencio or cambioSilencioANota or cambioNotaANota):
 
 			
 			
@@ -123,6 +129,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 			
 			if tNota>0.0625 and VariacionRMS<0:
 				EmpezoDescenso=True 
+				
 
 
 		Ventana0RMS=VentanaRMS
