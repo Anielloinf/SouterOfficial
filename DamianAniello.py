@@ -26,12 +26,6 @@ Fotas=['KK','C1', 'C#1', 'D1', 'D#1', 'E1', 'F1', 'F#1', 'G1', 'G#1','A1', 'A#1'
 #'A0', 'A#0', 'B0', 'C0', 'C#0', 'D0', 'D#0', 'E0', 'F0', 'F#0', 'G0', 'G#0',
 #'A7', 'A#7', 'B7', 'C7', 'C#7', 'D7', 'D#7', 'E7', 'F7', 'F#7', 'G7', 'G#7']
 
-FotasSinOctava=['KK','C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 
-'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 
-'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',  
-'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',
-'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B',
-'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#','A', 'A#', 'B', 'A' ]
 
 BordesFotas=np.array([31.772199163987505, 33.66147244087802, 35.66308775290277, 37.78372530509745,
  40.03046252816015, 42.41079769871837, 44.93267496413025, 47.604510855337864, 50.43522237625692, 
@@ -140,7 +134,7 @@ def EncontrarPicos(magnitude_values, noise_level):
      
 	return indices, magnitudes  
 
-def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=50):
+def EncontrarNotaEnSenal(signal,samplerate,noise_level=50,factorDeApreciacion=0.8):	###### Veririficar uso de factorDeApreciacion, borrar para version final
 	# FFT calculation
     # Calculo de FFT a signal
 
@@ -157,53 +151,21 @@ def EncontrarNotaEnSenal(signal,samplerate,factorDeApreciacion=0.8,noise_level=5
 	print("Largo magPicos "+str(len(magPicos)))
 	
 
-	################# Primera Propuesta Inicio
-	'''indDeterminante,magnitudNota=DefinirIndiceDeterminante(indPicos,magPicos,factorDeApreciacion)
-	freqExtraida=(indDeterminante)*samplerate/len(signal)
-	notaExtraida=pitching(freqExtraida)'''
-
-	################# Primera Propuesta Fin
-
-
-
-
-	################# Segunda Propuesta Inicio
-	indDeterminante,magnitudNota	=	DefinirIndiceDeNota(indPicos,magPicos,max=2**(1/24),min=2**(-1/24))
+	
+	indDeterminante,magnitudNota	=	DefinirIndiceDeNota(indPicos,magPicos,lSup=2**(1/24),lInf=2**(-1/24))
 	freqExtraida	=	(indDeterminante)*samplerate/len(signal)
 	print('freqExtraida '+ str(freqExtraida))
 	print('\n'+'################################')
 	notaExtraida	=	pitching(freqExtraida)
 
 
-	################# Segunda Propuesta Fin
-
-
-
-
-
-	################### Tercera Propuesta Inicio
-	'''freqPicos = indPicos * samplerate / len(signal)
-	notasPico = pitchingArreglo(freqPicos)
-	notaMax = notasPico[np.argmax(magPicos)]
-	notasSinOctavas = QuitarOctavas(notasPico)
-
-	
-
-
-	notaExtraida = notasPico[notasSinOctavas.index(notaMax[:-1])]
-
-	magnitudNota = magPicos[notasSinOctavas.index(notaMax[:-1])]
-
-	'''
-	################### Tercera Propuesta Fin
-
-	
+		
 	
 	return notaExtraida,magnitudNota
 
 
 
-def DefinirIndiceDeNota(indices,arreglo,max=2**(1/24),min=2**(-1/24)):
+def DefinirIndiceDeNota(indices,arreglo,lSup=2**(1/24),lInf=2**(-1/24)):
 	indMax=np.argmax(arreglo)
 	indMax=indices[indMax]
 
@@ -217,7 +179,7 @@ def DefinirIndiceDeNota(indices,arreglo,max=2**(1/24),min=2**(-1/24)):
 		
 		cociente=	indMax/(round(indMax/indices[i])*indices[i])
 
-		if cociente<=max and cociente>=min:
+		if cociente<=lSup and cociente>=lInf:
 			
 			indNota=indices[i]
 			picoNota=arreglo[i]
@@ -227,7 +189,7 @@ def DefinirIndiceDeNota(indices,arreglo,max=2**(1/24),min=2**(-1/24)):
 			print('picoNota '+ str(picoNota))
 			print('indMax #######'+ str(indMax))
 
-		i=i+1
+		i+=1
 	return	indNota,	picoNota
 
 

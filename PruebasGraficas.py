@@ -19,7 +19,7 @@ def Ventana(ArregloASegmentar,InicioDeVent,largoDeVentana):
 	return ArregloASegmentar[InicioDeVent:InicioDeVent+largoDeVentana]
 
 
-def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50,variacionDeCambioNota=200,factorDeApreciacion=0.7,noise_level=5):
+def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50,variacionDeCambioNota=200,noise_level=5,factorDeApreciacion=0.7):
 	sonidoAux=np.asarray(sonido[[range(len(sonido)-len(sonido)%largoDeVentana)]])
 	print("sonidoAux1 " +str(len(sonido)))
 	sonidoAux=np.split(sonidoAux,len(sonidoAux)/largoDeVentana)
@@ -99,7 +99,7 @@ def AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50
 				if Ventana0RMS<umbralRuido:
 					nota="KK"
 				else:
-					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,factorDeApreciacion=factorDeApreciacion,noise_level=noise_level)
+					nota,magnitudes=daan.EncontrarNotaEnSenal(senalConNota,muestreo,noise_level=noise_level,factorDeApreciacion=factorDeApreciacion)
 
 
 				archivo.write("Nota 	"+ str(nota)+ "	Duración	"+ str(tNota).ljust(18,'0')+ "	Momento s	"
@@ -171,7 +171,7 @@ print(muestreo)
 largoDeVentana=1024
 
 
-AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50,variacionDeCambioNota=200,factorDeApreciacion=0.6,noise_level=50)
+AnalizarAudio(sonido,largoDeVentana, muestreo,archivoGenerado,umbralRuido=50,variacionDeCambioNota=200,noise_level=50,factorDeApreciacion=0.6)
 
 
 Inicio1=478*largoDeVentana

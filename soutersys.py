@@ -59,10 +59,7 @@ class Souter(QtWidgets.QMainWindow):
         # setup pitch
         self.audioCompleto= []  #Señal con todo el sonido desde el ultimo play hasta la ultima pausa
 
-        self.wf=wave.open('SonidoCaptadoPorSoutersys.wav', 'wb')
-        self.wf.setnchannels(1)
-        self.wf.setsampwidth(self.p.get_sample_size(self.pyaudio_format))
-        self.wf.setframerate(self.samplerate)
+        
 
         #Llamado a las funciones al iniciar o detener la grabacion
         self.ui.btn_grabar.clicked.connect(self.ActiveSouter)
@@ -78,8 +75,7 @@ class Souter(QtWidgets.QMainWindow):
         self.umbralRuido=50    #umbralRuido es el valor que determina cuando la señal deja o no de ser silencio 
        
         self.variacionDeCambioNota=200     #variacionDeCambioNota es el cambio de magnitud que determina cuando una nota empieza a tocarse despues de haber tocado una anteriormente
-        #Evaluar si vale la pena cambiar esto por una fraccion o multiplo del valor maximo de sig0FFT
-       
+               
         self.factorDeApreciacion=0.6    #factorDeApreciacion define la relacion máxima que tiene la magnitud mas alta del espectro de frecuencia con respecto a la magnitud que corresponde a la frecuencia de la nota tocada
        
         self.noise_level=50        #noise_level es el valor mínimo en el espectro de frecuencia que se considera como posible pico de la frecuencia representativa de la señal
@@ -90,11 +86,6 @@ class Souter(QtWidgets.QMainWindow):
         self.MagEnElTiempo=[]
         self.sig0RMS=0
         self.empezoDescenso=False
-
-        #self.sig0FFT=np.zeros(self.buffer_size//2)
-        
-        #self.sig0Pico=np.ones(self.buffer_size//2)
-
 
         
 
@@ -159,15 +150,7 @@ class Souter(QtWidgets.QMainWindow):
                 self.sig0RMS=self.sig1RMS
                 
 
-                #self.sig0FFT=self.sig1FFT*1
-                
-                
-                #self.sig0Pico=(self.sig0FFT<max(self.sig0FFT)) 
-                
-                ''' en sig0Pico el elemento de posición paralela al pico mas alto de sig0FFT se hace 0 
-                y el resto de los elementos valen 1 '''
-
-                
+                                
             
             except KeyboardInterrupt:
                 print("*** Ctrl+C pressed, exiting")
@@ -193,8 +176,6 @@ class Souter(QtWidgets.QMainWindow):
                 print('##################   '+str(len(self.audioCompleto)))
                 
 
-                self.wf.writeframes(b''.join(self.audioCompleto))#Guardando audio
-                self.wf.close()
 
 
 
@@ -204,7 +185,22 @@ class Souter(QtWidgets.QMainWindow):
         self.ui.posx=1
         self.ui.cntbtt=0
         self.ui.btn_grabar.setIcon(QtGui.QIcon("imagenes/grabar.tif"))
-        self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/offline.png"))                
+        self.ui.rec.setPixmap(QtGui.QPixmap("imagenes/offline.png")) 
+
+        self.wf=wave.open('SonidoCaptadoPorSoutersys.wav', 'wb')
+        self.wf.setnchannels(1)
+        self.wf.setsampwidth(self.p.get_sample_size(self.pyaudio_format))
+        self.wf.setframerate(self.samplerate) 
+        self.wf.writeframes(b''.join(self.audioCompleto))
+        self.wf.close()
+
+        self.audioCompleto= [] 
+        '''Se reinicia el arreglo donde se guarda el audio completo para  que al
+        pulsar play nuevamente se genere unn audio completamente nuevo
+        '''
+
+
+
 
 if __name__ == "__main__":
     app= QtWidgets.QApplication(sys.argv)
